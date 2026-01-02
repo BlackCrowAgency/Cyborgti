@@ -1,79 +1,103 @@
 "use client";
 
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
-import type { CartItem } from "./types";
-
-type CartState = {
-  items: CartItem[];
-
-  addItem: (slug: string, qty?: number) => void;
-  removeItem: (slug: string) => void;
-  setQty: (slug: string, qty: number) => void;
-  clear: () => void;
-
-  countItems: () => number;
-};
+import { persist, createJSONStorage } from "zustand/middleware";
+import type { CartItem, CartState } from "./types";
 
 const STORAGE_KEY = "cyborgti-cart";
-const STORAGE_VERSION = 2;
+
+function normalizeItems(input: unknown): CartItem[] {
+  if (!input) return [];
+
+  // Si ya es la forma actual
+  if (Array.isArray(input)) {
+    return input
+      .map((x: any) => ({
+        slug: String(x?.slug ?? ""),
+        qty: Number(x?.qty ?? 0),
+      }))
+      .filter((x) => x.slug && x.qty > 0);
+  }
+
+  // Si antes guardaste algo como { cart: [...] } o similar
+  if (typeof input === "object") {
+    const anyObj = input as any;
+
+    if (Array.isArray(anyObj.items)) return normalizeItems(anyObj.items);
+    if (Array.isArray(anyObj.cart)) return normalizeItems(anyObj.cart);
+  }
+
+  return [];
+}
 
 export const useCartStore = create<CartState>()(
   persist(
     (set, get) => ({
       items: [],
 
-      addItem: (slug, qty = 1) =>
+      addItem: (slug, qty = 1) => {
+        const cleanSlug = String(slug);
+        const addQty = Math.max(1, Math.floor(qty));
+
         set((state) => {
-          const exists = state.items.find((i) => i.slug === slug);
-          if (exists) {
-            return {
-              items: state.items.map((i) =>
-                i.slug === slug ? { ...i, qty: i.qty + qty } : i
-              ),
-            };
-          }
-          return { items: [...state.items, { slug, qty }] };
-        }),
+          const found = state.items.find((i) => i.slug === cleanSlug);
+          if (!found) return { items: [...state.items, { slug: cleanSlug, qty: addQty }] };
 
-      removeItem: (slug) =>
-        set((state) => ({ items: state.items.filter((i) => i.slug !== slug) })),
+          return {
+            items: state.items.map((i) =>
+              i.slug === cleanSlug ? { ...i, qty: i.qty + addQty } : i
+            ),
+          };
+        });
+      },
 
-      setQty: (slug, qty) =>
-        set((state) => ({
-          items: state.items
-            .map((i) => (i.slug === slug ? { ...i, qty } : i))
-            .filter((i) => i.qty > 0),
-        })),
+      removeItem: (slug) => {
+        const cleanSlug = String(slug);
+        set((state) => ({ items: state.items.filter((i) => i.slug !== cleanSlug) }));
+      },
+
+      setQty: (slug, qty) => {
+        const cleanSlug = String(slug);
+        const nextQty = Math.max(0, Math.floor(qty));
+
+        set((state) => {
+          if (nextQty === 0) return { items: state.items.filter((i) => i.slug !== cleanSlug) };
+
+          return {
+            items: state.items.map((i) =>
+              i.slug === cleanSlug ? { ...i, qty: nextQty } : i
+            ),
+          };
+        });
+      },
 
       clear: () => set({ items: [] }),
 
-      countItems: () => get().items.reduce((acc, i) => acc + i.qty, 0),
+      setItems: (items) => set({ items: normalizeItems(items) }),
     }),
     {
       name: STORAGE_KEY,
-      version: STORAGE_VERSION,
+      version: 2,
+      storage: createJSONStorage(() => localStorage),
 
-      // ✅ Migración PRO: si cambia el shape, normaliza y evita crashes
-      migrate: (persisted: unknown) => {
-        // zustand guarda algo como: { state: {...}, version: n } internamente
-        // pero aquí recibimos el "state" persistido.
-        const obj = persisted as Partial<CartState> | null;
+      migrate: (persistedState, fromVersion) => {
+        // Si había algo guardado viejo, lo normalizamos a { items: CartItem[] }
+        const anyState = persistedState as any;
 
-        const itemsRaw = Array.isArray(obj?.items) ? obj!.items : [];
+        // Caso típico: persistedState ya es { items: [...] }
+        if (anyState && typeof anyState === "object") {
+          const items = normalizeItems(anyState.items ?? anyState.cart ?? anyState);
+          return { ...anyState, items };
+        }
 
-        const items = itemsRaw
-          .map((x: any) => ({
-            slug: typeof x?.slug === "string" ? x.slug : "",
-            qty: typeof x?.qty === "number" ? x.qty : 0,
-          }))
-          .filter((x: any) => x.slug && x.qty > 0);
-
-        return { items };
+        return { items: [] };
       },
     }
   )
 );
 
-// Alias para compatibilidad si algún componente aún importa useCart
+/**
+ * Alias para compatibilidad con código viejo que importaba useCart.
+ * Así no vuelves a romper imports.
+ */
 export const useCart = useCartStore;
