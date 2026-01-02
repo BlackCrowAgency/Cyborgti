@@ -1,49 +1,35 @@
 import Link from "next/link";
 import { getHomePromos } from "@/data/promos/getHomePromos";
 
-type PromoCardProps = {
-  label: string;
+function PromoCard({
+  image,
+  label,
+  href,
+}: {
   image: string;
-  href?: string;
-  heightClass: string;
-};
-
-function PromoCard({ label, image, href, heightClass }: PromoCardProps) {
-  const common =
-    "group relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 shadow-card transition-cyborg hover:border-brand-500/40 hover:shadow-brand";
-
-  const content = (
-    <>
+  label?: string;
+  href: string | null;
+}) {
+  const inner = (
+    <div className="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 shadow-card transition-cyborg hover:border-brand-500/40 hover:shadow-brand">
       <div
-        className={`${heightClass} w-full bg-cover bg-center opacity-80 transition-cyborg group-hover:opacity-95`}
+        className="h-48 w-full bg-cover bg-center opacity-80 transition-cyborg group-hover:opacity-95"
         style={{ backgroundImage: `url('${image}')` }}
-        aria-hidden="true"
       />
-      <div
-        className="pointer-events-none absolute inset-0 bg-linear-to-t from-black/55 via-black/10 to-transparent"
-        aria-hidden="true"
-      />
+      <div className="pointer-events-none absolute inset-0 bg-linear-to-t from-black/55 via-black/10 to-transparent" />
       {label ? (
         <div className="absolute left-6 bottom-6">
           <div className="overline">{label}</div>
         </div>
       ) : null}
-    </>
+    </div>
   );
 
-  // ✅ Si no hay href -> tarjeta informativa (no navega)
-  if (!href) {
-    return (
-      <article className={common} aria-label={label || "Promoción"}>
-        {content}
-      </article>
-    );
-  }
+  if (!href) return <div aria-label="Promoción informativa">{inner}</div>;
 
-  // ✅ Si hay href -> Link
   return (
-    <Link href={href} className={common} aria-label={label || "Promoción"}>
-      {content}
+    <Link href={href} className="block">
+      {inner}
     </Link>
   );
 }
@@ -62,25 +48,37 @@ export async function PromosSection() {
       <div className="grid gap-8">
         {/* top 2 */}
         <div className="grid gap-8 md:grid-cols-2">
-          {promos.top.map((p) => (
-            <PromoCard
-              key={p.id}
-              label={p.label}
-              image={p.image}
-              href={p.href}
-              heightClass="h-48"
-            />
+          {promos.top.slice(0, 2).map((p) => (
+            <PromoCard key={p.id} image={p.image} label={p.label} href={p.href} />
           ))}
         </div>
 
-        {/* featured (solo si existe) */}
+        {/* featured (portada) */}
         {promos.featured ? (
-          <PromoCard
-            label={promos.featured.label ?? ""}
-            image={promos.featured.image}
-            href={promos.featured.href}
-            heightClass="h-72"
-          />
+          <div className="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 shadow-card transition-cyborg hover:border-brand-500/40 hover:shadow-brand">
+            {promos.featured.href ? (
+              <Link href={promos.featured.href} className="block">
+                <div
+                  className="h-72 w-full bg-cover bg-center opacity-80 transition-cyborg group-hover:opacity-95"
+                  style={{ backgroundImage: `url('${promos.featured.image}')` }}
+                />
+                <div className="pointer-events-none absolute inset-0 bg-linear-to-t from-black/55 via-black/10 to-transparent" />
+                {promos.featured.label ? (
+                  <div className="absolute left-6 bottom-6">
+                    <div className="overline">{promos.featured.label}</div>
+                  </div>
+                ) : null}
+              </Link>
+            ) : (
+              <>
+                <div
+                  className="h-72 w-full bg-cover bg-center opacity-80"
+                  style={{ backgroundImage: `url('${promos.featured.image}')` }}
+                />
+                <div className="pointer-events-none absolute inset-0 bg-linear-to-t from-black/55 via-black/10 to-transparent" />
+              </>
+            )}
+          </div>
         ) : null}
       </div>
     </section>

@@ -1,45 +1,49 @@
 {
-  "top": [
-    {
-      "id": "promo-2x1",
-      "label": "2x1 CCNA + CYBEROPS — S/299",
-      "image": "/images/promos/promo-2x1.jpg",
-      "href": "/promociones/2x1-ccna-cyberops"
-    },
-    {
-      "id": "promo-10off",
-      "label": "10% OFF EN CUALQUIER ESPECIALIDAD",
-      "image": "/images/promos/promo-10off.jpg"
+  "home": {
+    "top": [
+      {
+        "id": "2x1-ccna-cyberops",
+        "label": "2x1 CCNA + CyberOps • S/299",
+        "image": "/images/promo-2x1.jpg",
+        "href": "/promociones/2x1-ccna-cyberops"
+      },
+      {
+        "id": "10off-web",
+        "label": "10% OFF en cualquier especialidad (comprando en la web)",
+        "image": "/images/promo-10off.jpg",
+        "href": null
+      }
+    ],
+    "featured": {
+      "id": "cover",
+      "image": "/images/promo-cover.jpg",
+      "href": "/promociones"
     }
-  ],
-  "featured": {
-    "id": "promo-portada",
-    "label": "",
-    "image": "/images/promos/promo-featured.jpg",
-    "href": "/promociones"
   },
-  "promos": [
+  "items": [
     {
-      "type": "bundle",
       "id": "2x1-ccna-cyberops",
+      "type": "bundle",
       "title": "2x1 CCNA + CyberOps",
-      "subtitle": "S/299 por inauguración de nuestra web",
-      "image": "/images/promos/promo-2x1.jpg",
-      "href": "/promociones/2x1-ccna-cyberops",
+      "subtitle": "S/299 por inauguración de la web",
+      "image": "/images/promo-2x1.jpg",
       "activeFrom": "2026-01-01",
       "activeTo": "2026-02-15",
+      "href": "/promociones/2x1-ccna-cyberops",
       "courses": ["ccna-200-301", "cyberops-associate"],
       "bundlePricePEN": 299
     },
     {
-      "type": "percent",
       "id": "10off-web",
-      "title": "10% OFF en cualquier especialidad",
-      "subtitle": "Aplica comprando desde nuestra web",
-      "image": "/images/promos/promo-10off.jpg",
+      "type": "percent",
+      "title": "10% de descuento en cualquiera de nuestras especialidades",
+      "subtitle": "Aplicado por comprar desde nuestra web",
+      "image": "/images/promo-10off.jpg",
       "activeFrom": "2026-01-01",
       "activeTo": "2026-12-31",
-      "discountPercent": 10
+      "discountPercent": 10,
+      "href": null,
+      "courses": []
     }
   ]
 }

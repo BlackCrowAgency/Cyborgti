@@ -1,21 +1,25 @@
-import { cache } from "react";
 import { getPromos } from "./getPromos";
 import type { Promo } from "./schema";
 
-function isActive(p: Promo, now: Date) {
-  const from = new Date(p.activeFrom);
-  const to = new Date(p.activeTo);
-  return now >= from && now <= to;
+function toTime(dateStr: string): number {
+  const t = new Date(dateStr).getTime();
+  return Number.isFinite(t) ? t : 0;
 }
 
-export const getActivePromos = cache(async (now: Date = new Date()): Promise<Promo[]> => {
-  const promos = await getPromos();
-  return promos
-    .filter((p) => isActive(p, now))
-    .sort((a, b) => +new Date(a.activeFrom) - +new Date(b.activeFrom));
-});
+export async function getActivePromos(now = new Date()): Promise<Promo[]> {
+  const store = await getPromos();
+  const nowT = now.getTime();
 
-export const getTopActivePromo = cache(async (now: Date = new Date()): Promise<Promo | null> => {
-  const active = await getActivePromos(now);
-  return active[0] ?? null;
-});
+  return store.items
+    .filter((p) => {
+      const from = toTime(p.activeFrom);
+      const to = toTime(p.activeTo);
+      return from <= nowT && nowT <= to;
+    })
+    .sort((a, b) => toTime(b.activeFrom) - toTime(a.activeFrom));
+}
+
+export async function getTopActivePromo(): Promise<Promo | null> {
+  const actives = await getActivePromos();
+  return actives[0] ?? null;
+}

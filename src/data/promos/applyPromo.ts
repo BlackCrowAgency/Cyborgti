@@ -1,39 +1,35 @@
 import type { Promo } from "./schema";
 
-/**
- * ¿La promo aplica a un curso?
- * - bundle: aplica si el slug está dentro de promo.courses
- * - percent: por ahora aplica a todos (descuento general)
- */
-export function promoAppliesToCourse(promo: Promo, slug: string): boolean {
+export function promoAppliesToCourse(promo: Promo | null | undefined, slug: string) {
+  if (!promo) return false;
+
   if (promo.type === "bundle") {
     return promo.courses.includes(slug);
   }
-  // percent (10% off general)
-  return true;
+
+  // percent
+  if (!promo.courseSlugs || promo.courseSlugs.length === 0) return true;
+  return promo.courseSlugs.includes(slug);
 }
 
 /**
- * Calcula el precio final de un curso (si aplica promo percent).
- * - bundle NO modifica el precio unitario (se aplica como pack en carrito más adelante)
- * - percent: descuenta %
+ * Aplica descuento a un precio.
+ * - percent => aplica % si corresponde
+ * - bundle => NO cambia el precio individual (se vende como pack)
  */
 export function applyPromoToCoursePrice(
-  basePricePEN: number,
-  promo: Promo | null,
-  courseSlug?: string
-): number {
+  promo: Promo | null | undefined,
+  slug: string,
+  basePricePEN: number
+) {
   if (!promo) return basePricePEN;
 
-  if (courseSlug && !promoAppliesToCourse(promo, courseSlug)) return basePricePEN;
-
   if (promo.type === "percent") {
-    const pct = promo.discountPercent / 100;
-    const discounted = basePricePEN * (1 - pct);
-    // redondeo a 2 decimales
+    if (!promoAppliesToCourse(promo, slug)) return basePricePEN;
+    const discounted = basePricePEN * (1 - promo.discountPercent / 100);
+    // 2 decimales
     return Math.round(discounted * 100) / 100;
   }
 
-  // bundle: no altera precio unitario
   return basePricePEN;
 }
