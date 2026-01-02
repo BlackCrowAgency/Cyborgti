@@ -1,0 +1,22 @@
+{
+  "top": [
+    {
+      "id": "promo-fechas",
+      "label": "VÁLIDO HASTA FEBRERO 15",
+      "image": "/images/promos/promo-1.jpg",
+      "href": "/promociones"
+    },
+    {
+      "id": "promo-clientes",
+      "label": "EXCLUSIVO PARA CLIENTES",
+      "image": "/images/promos/promo-2.jpg",
+      "href": "/promociones"
+    }
+  ],
+  "featured": {
+    "id": "promo-portada",
+    "label": "",
+    "image": "/images/promos/promo-featured.jpg",
+    "href": "/promociones"
+  }
+}
