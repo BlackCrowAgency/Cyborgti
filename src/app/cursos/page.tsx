@@ -1,30 +1,40 @@
 import { getAllCourses } from "@/data/courses/getAll";
 import { CourseGrid } from "@/components/course/CourseGrid";
 import { getTopActivePromo } from "@/data/promos/getActivePromos";
-import { applyPromo, promoAppliesToCourse } from "@/data/promos/applyPromo";
+import { applyPromoToCoursePrice, promoAppliesToCourse } from "@/data/promos/applyPromo";
 
 export default async function CursosPage() {
   const courses = getAllCourses();
+
+  // Tomamos 1 promo activa “principal” (por ahora)
   const promo = await getTopActivePromo();
 
-  const finalPrices = Object.fromEntries(
-    courses.map((c) => {
-      const eligible = promo && promoAppliesToCourse(promo, c.slug);
-      const final = eligible ? applyPromo(c.pricePEN, promo) : c.pricePEN;
-      return [c.slug, final];
-    })
-  );
+  const coursesWithPricing = courses.map((c) => {
+    const inPromo = promo ? promoAppliesToCourse(promo, c.slug) : false;
+
+    const finalPricePEN = applyPromoToCoursePrice(
+      c.pricePEN,
+      promo,
+      c.slug
+    );
+
+    return {
+      ...c,
+      promo: promo && inPromo ? promo : null,
+      finalPricePEN,
+    };
+  });
 
   return (
-    <main className="mx-auto min-h-dvh max-w-6xl px-4 py-10">
-      <header className="mb-6">
-        <h1 className="text-3xl font-semibold tracking-tight">Cursos</h1>
-        <p className="mt-2 text-muted-foreground">
-          Catálogo de CyborgTI. (Luego aplicamos tu diseño de Figma)
+    <main className="mx-auto max-w-7xl px-4 py-10">
+      <header className="mb-8">
+        <h1 className="h2">Cursos</h1>
+        <p className="muted mt-2">
+          Elige tu especialidad y empieza hoy.
         </p>
       </header>
 
-      <CourseGrid courses={courses} finalPrices={finalPrices} />
+      <CourseGrid courses={coursesWithPricing as any} />
     </main>
   );
 }

@@ -1,16 +1,15 @@
 {
   "top": [
     {
-      "id": "promo-fechas",
-      "label": "VÁLIDO HASTA FEBRERO 15",
-      "image": "/images/promos/promo-1.jpg",
-      "href": "/promociones"
+      "id": "promo-2x1",
+      "label": "2x1 CCNA + CYBEROPS — S/299",
+      "image": "/images/promos/promo-2x1.jpg",
+      "href": "/promociones/2x1-ccna-cyberops"
     },
     {
-      "id": "promo-clientes",
-      "label": "EXCLUSIVO PARA CLIENTES",
-      "image": "/images/promos/promo-2.jpg",
-      "href": "/promociones"
+      "id": "promo-10off",
+      "label": "10% OFF EN CUALQUIER ESPECIALIDAD",
+      "image": "/images/promos/promo-10off.jpg"
     }
   ],
   "featured": {
@@ -18,5 +17,29 @@
     "label": "",
     "image": "/images/promos/promo-featured.jpg",
     "href": "/promociones"
-  }
+  },
+  "promos": [
+    {
+      "type": "bundle",
+      "id": "2x1-ccna-cyberops",
+      "title": "2x1 CCNA + CyberOps",
+      "subtitle": "S/299 por inauguración de nuestra web",
+      "image": "/images/promos/promo-2x1.jpg",
+      "href": "/promociones/2x1-ccna-cyberops",
+      "activeFrom": "2026-01-01",
+      "activeTo": "2026-02-15",
+      "courses": ["ccna-200-301", "cyberops-associate"],
+      "bundlePricePEN": 299
+    },
+    {
+      "type": "percent",
+      "id": "10off-web",
+      "title": "10% OFF en cualquier especialidad",
+      "subtitle": "Aplica comprando desde nuestra web",
+      "image": "/images/promos/promo-10off.jpg",
+      "activeFrom": "2026-01-01",
+      "activeTo": "2026-12-31",
+      "discountPercent": 10
+    }
+  ]
 }

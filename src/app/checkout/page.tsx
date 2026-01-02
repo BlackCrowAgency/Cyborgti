@@ -1,26 +1,19 @@
-import { getAllCourses } from "@/data/courses/getAll";
-import { getTopActivePromo } from "@/data/promos/getActivePromos";
-import { applyPromo, promoAppliesToCourse } from "@/data/promos/applyPromo";
 import { CheckoutClient } from "@/components/checkout/CheckoutClient";
+import { getAllCourses } from "@/data/courses/getAll";
 
-export default async function CheckoutPage() {
+export default function CheckoutPage() {
   const courses = getAllCourses();
-  const promo = await getTopActivePromo();
 
   const priceBySlug = Object.fromEntries(
-    courses.map((c) => {
-      const eligible = promo && promoAppliesToCourse(promo, c.slug);
-      const final = eligible ? applyPromo(c.pricePEN, promo) : c.pricePEN;
-      return [c.slug, final];
-    })
+    courses.map((c) => [c.slug, c.pricePEN])
   );
 
   return (
-    <main className="mx-auto min-h-dvh max-w-6xl px-4 py-10">
-      <header className="mb-6">
-        <h1 className="text-3xl font-semibold tracking-tight">Checkout</h1>
-        <p className="mt-2 text-muted-foreground">
-          Completa tus datos. Luego conectamos Mercado Pago.
+    <main className="mx-auto max-w-7xl px-4 py-10">
+      <header className="mb-8">
+        <h1 className="h2">Checkout</h1>
+        <p className="muted mt-2">
+          Revisión final antes de pagar. (Mercado Pago se integra luego)
         </p>
       </header>
 

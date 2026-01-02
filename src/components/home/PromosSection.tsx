@@ -1,44 +1,50 @@
-import { FiZap } from "react-icons/fi";
 import Link from "next/link";
 import { getHomePromos } from "@/data/promos/getHomePromos";
 
-function PromoCard({
-  image,
-  label,
-  href,
-  className = "",
-}: {
+type PromoCardProps = {
+  label: string;
   image: string;
-  label?: string;
   href?: string;
-  className?: string;
-}) {
-  const Wrapper = href ? Link : ("div" as any);
+  heightClass: string;
+};
 
-  return (
-    <Wrapper
-      {...(href ? { href } : {})}
-      className={[
-        "group relative block overflow-hidden rounded-2xl border border-white/10 bg-white/5 shadow-card",
-        "transition-cyborg hover:border-brand-600/35 hover:glow-brand-soft",
-        className,
-      ].join(" ")}
-    >
+function PromoCard({ label, image, href, heightClass }: PromoCardProps) {
+  const common =
+    "group relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 shadow-card transition-cyborg hover:border-brand-500/40 hover:shadow-brand";
+
+  const content = (
+    <>
       <div
-        className="absolute inset-0 bg-cover bg-center"
+        className={`${heightClass} w-full bg-cover bg-center opacity-80 transition-cyborg group-hover:opacity-95`}
         style={{ backgroundImage: `url('${image}')` }}
         aria-hidden="true"
       />
-      <div className="absolute inset-0 bg-linear-to-t from-black/70 via-black/25 to-black/10" />
-
+      <div
+        className="pointer-events-none absolute inset-0 bg-linear-to-t from-black/55 via-black/10 to-transparent"
+        aria-hidden="true"
+      />
       {label ? (
-        <div className="absolute bottom-6 left-6 right-6">
-          <span className="text-sm font-semibold tracking-[0.14em] text-white/90">
-            {label}
-          </span>
+        <div className="absolute left-6 bottom-6">
+          <div className="overline">{label}</div>
         </div>
       ) : null}
-    </Wrapper>
+    </>
+  );
+
+  // ✅ Si no hay href -> tarjeta informativa (no navega)
+  if (!href) {
+    return (
+      <article className={common} aria-label={label || "Promoción"}>
+        {content}
+      </article>
+    );
+  }
+
+  // ✅ Si hay href -> Link
+  return (
+    <Link href={href} className={common} aria-label={label || "Promoción"}>
+      {content}
+    </Link>
   );
 }
 
@@ -46,32 +52,36 @@ export async function PromosSection() {
   const promos = await getHomePromos();
 
   return (
-    <section className="mx-auto max-w-7xl px-4 pt-10 pb-16">
-      <div className="flex items-center justify-center gap-4">
-        <FiZap className="text-brand-500 text-2xl md:text-3xl" />
-        <h2 className="h2 text-center text-white">ÚLTIMAS PROMOCIONES</h2>
-        <FiZap className="text-brand-500 text-2xl md:text-3xl" />
+    <section className="mx-auto max-w-7xl px-4 py-14">
+      <div className="mb-10 flex items-center justify-center gap-6">
+        <span className="text-brand-500 text-2xl">⚡</span>
+        <h2 className="h2 text-center">ÚLTIMAS PROMOCIONES</h2>
+        <span className="text-brand-500 text-2xl">⚡</span>
       </div>
 
-      <div className="mt-8 grid gap-6 md:grid-cols-2">
-        {promos.top.map((p) => (
+      <div className="grid gap-8">
+        {/* top 2 */}
+        <div className="grid gap-8 md:grid-cols-2">
+          {promos.top.map((p) => (
+            <PromoCard
+              key={p.id}
+              label={p.label}
+              image={p.image}
+              href={p.href}
+              heightClass="h-48"
+            />
+          ))}
+        </div>
+
+        {/* featured (solo si existe) */}
+        {promos.featured ? (
           <PromoCard
-            key={p.id}
-            image={p.image}
-            label={p.label}
-            href={p.href}
-            className="h-[220px] md:h-[240px]"
+            label={promos.featured.label ?? ""}
+            image={promos.featured.image}
+            href={promos.featured.href}
+            heightClass="h-72"
           />
-        ))}
-      </div>
-
-      <div className="mt-8">
-        <PromoCard
-          image={promos.featured.image}
-          label={promos.featured.label}
-          href={promos.featured.href}
-          className="h-[260px] md:h-[360px]"
-        />
+        ) : null}
       </div>
     </section>
   );

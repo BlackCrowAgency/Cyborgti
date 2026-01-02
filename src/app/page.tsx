@@ -4,7 +4,7 @@ import { PromosSection } from "@/components/home/PromosSection";
 
 export default function HomePage() {
   return (
-    <main className="bg-cyborg">
+    <main>
       <Hero />
       <SpecialtiesSection />
       <PromosSection />

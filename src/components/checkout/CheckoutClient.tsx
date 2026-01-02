@@ -3,33 +3,64 @@
 import Link from "next/link";
 import { useMemo } from "react";
 import { Button } from "@/components/ui/button";
-import { useCartStore } from "@/features/cart/store";
-import { hydrateCartItems, calcSubtotal } from "@/features/cart/selectors";
-import { getAllCourses } from "@/data/courses/getAll";
 import { formatPEN } from "@/lib/money";
+import { useCartStore } from "@/features/cart/store";
+import type { CourseDTO } from "@/data/courses/schema";
 
-export function CheckoutClient() {
-  const items = useCartStore((state) => state.items);
-  const clear = useCartStore((state) => state.clear);
+type Props = {
+  courses: CourseDTO[];
+  priceBySlug: Record<string, number>;
+};
 
-  const courses = useMemo(() => getAllCourses(), []);
-  const hydrated = useMemo(() => hydrateCartItems(items, courses), [items, courses]);
-  const subtotal = useMemo(() => calcSubtotal(hydrated), [hydrated]);
+type HydratedItem = {
+  slug: string;
+  qty: number;
+  title: string;
+  unitPricePEN: number;
+};
 
-  if (hydrated.length === 0) {
+export function CheckoutClient({ courses, priceBySlug }: Props) {
+  const items = useCartStore((s) => s.items);
+  const clear = useCartStore((s) => s.clear);
+
+  // Mapa rápido para buscar cursos por slug
+  const courseBySlug = useMemo(() => {
+    return Object.fromEntries(courses.map((c) => [c.slug, c]));
+  }, [courses]);
+
+  // “Hydratamos” items del carrito con data del curso
+  const hydrated: HydratedItem[] = useMemo(() => {
+    return items
+      .map((i) => {
+        const c = courseBySlug[i.slug];
+        if (!c) return null;
+
+        const unitPrice =
+          priceBySlug[i.slug] ?? c.pricePEN ?? 0;
+
+        return {
+          slug: i.slug,
+          qty: i.qty,
+          title: c.title,
+          unitPricePEN: unitPrice,
+        };
+      })
+      .filter(Boolean) as HydratedItem[];
+  }, [items, courseBySlug, priceBySlug]);
+
+  const subtotal = useMemo(() => {
+    return hydrated.reduce((acc, it) => acc + it.unitPricePEN * it.qty, 0);
+  }, [hydrated]);
+
+  if (items.length === 0) {
     return (
-      <div className="rounded-xl border border-white/10 bg-white/5 p-6">
-        <h1 className="text-xl font-semibold text-white">Checkout</h1>
-        <p className="mt-2 text-white/70">No tienes cursos en tu carrito.</p>
-
-        <div className="mt-6 flex gap-2">
+      <div className="rounded-2xl border border-border/60 bg-white/5 p-8 shadow-card">
+        <p className="text-white/80">Tu carrito está vacío.</p>
+        <div className="mt-4">
           <Link href="/cursos">
-            <Button className="bg-brand-500 shadow-brand hover:glow-brand-soft">
-              Ver cursos
+            <Button className="bg-brand-500 hover:bg-brand-500/90">
+              Explorar cursos
             </Button>
-          </Link>
-          <Link href="/carrito">
-            <Button variant="outline">Ir al carrito</Button>
           </Link>
         </div>
       </div>
@@ -37,57 +68,67 @@ export function CheckoutClient() {
   }
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
-      <div className="rounded-xl border border-white/10 bg-white/5 p-6">
-        <h1 className="text-xl font-semibold text-white">Checkout</h1>
-        <p className="mt-2 text-white/70">
-          Esta es una base estática. La pasarela (Mercado Pago) se integra después.
-        </p>
+    <section className="grid gap-6 lg:grid-cols-[1fr_360px]">
+      <div className="rounded-2xl border border-border/60 bg-white/5 p-6 shadow-card">
+        <h2 className="text-lg font-semibold text-white/95">Resumen</h2>
 
-        <div className="mt-6 space-y-3">
-          {hydrated.map(({ course, qty }) => (
+        <div className="mt-4 space-y-3">
+          {hydrated.map((it) => (
             <div
-              key={course.slug}
-              className="flex items-center justify-between rounded-lg border border-white/10 bg-black/20 px-4 py-3"
+              key={it.slug}
+              className="flex items-start justify-between gap-4 border-b border-border/40 pb-3"
             >
               <div>
-                <div className="text-sm font-semibold text-white/90">{course.title}</div>
-                <div className="text-xs text-white/60">
-                  {qty} × {formatPEN(course.pricePEN)}
-                </div>
+                <div className="text-white/90">{it.title}</div>
+                <div className="text-sm text-white/60">Cantidad: {it.qty}</div>
               </div>
-              <div className="text-sm font-semibold text-white">
-                {formatPEN(course.pricePEN * qty)}
+
+              <div className="text-right">
+                <div className="text-white/90">{formatPEN(it.unitPricePEN)}</div>
+                <div className="text-sm text-white/60">
+                  {formatPEN(it.unitPricePEN * it.qty)}
+                </div>
               </div>
             </div>
           ))}
         </div>
 
-        <div className="mt-6 flex gap-2">
-          <Link href="/carrito">
-            <Button variant="outline">Volver al carrito</Button>
-          </Link>
-          <Button
-            onClick={clear}
-            className="bg-brand-500 shadow-brand hover:glow-brand-soft"
-          >
-            Simular pago (luego MP)
-          </Button>
+        <div className="mt-6 flex items-center justify-between">
+          <span className="text-white/70">Subtotal</span>
+          <span className="text-white/95 font-semibold">{formatPEN(subtotal)}</span>
         </div>
       </div>
 
-      <aside className="rounded-xl border border-white/10 bg-white/5 p-6">
-        <h2 className="text-lg font-semibold text-white">Resumen</h2>
+      <aside className="rounded-2xl border border-border/60 bg-white/5 p-6 shadow-card">
+        <h2 className="text-lg font-semibold text-white/95">Pago</h2>
 
-        <div className="mt-4 flex items-center justify-between text-sm text-white/80">
-          <span>Subtotal</span>
-          <span className="font-semibold text-white">{formatPEN(subtotal)}</span>
-        </div>
-
-        <p className="mt-3 text-xs text-white/60">
-          * Aquí luego conectamos Mercado Pago con tus precios/promos ya listos.
+        <p className="mt-2 text-sm text-white/70">
+          Mercado Pago se conectará en la siguiente etapa. Por ahora esto es un checkout demo.
         </p>
+
+        <div className="mt-6 space-y-3">
+          <Button className="w-full bg-brand-500 hover:bg-brand-500/90">
+            Continuar (Demo)
+          </Button>
+
+          <Button
+            variant="outline"
+            className="w-full border-brand-500/40 text-white hover:bg-brand-500/10"
+            onClick={clear}
+          >
+            Vaciar carrito
+          </Button>
+
+          <Link href="/carrito" className="block">
+            <Button
+              variant="outline"
+              className="w-full border-white/15 text-white/90 hover:bg-white/5"
+            >
+              Volver al carrito
+            </Button>
+          </Link>
+        </div>
       </aside>
-    </div>
+    </section>
   );
 }

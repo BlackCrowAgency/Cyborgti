@@ -1,16 +1,24 @@
 import { z } from "zod";
 
-export const homePromoItemSchema = z.object({
-  id: z.string().min(1),
-  label: z.string().optional().default(""),
-  image: z.string().min(1), // ruta dentro de /public
-  href: z.string().optional().default("/promociones"),
+const HomePromoItemSchema = z.object({
+  id: z.string(),
+  label: z.string(),
+  image: z.string(),
+  href: z.string().optional(), // <- opcional (para la promo informativa 10%)
 });
 
-export const homePromosSchema = z.object({
-  top: z.array(homePromoItemSchema).max(2).default([]),
-  featured: homePromoItemSchema,
+const HomeFeaturedSchema = z.object({
+  id: z.string(),
+  label: z.string().optional().default(""),
+  image: z.string(),
+  href: z.string().optional(),
 });
+
+export const homePromosSchema = z
+  .object({
+    top: z.array(HomePromoItemSchema).default([]),
+    featured: HomeFeaturedSchema.optional(),
+  })
+  .passthrough(); // <- permite "promos": [...] sin romper el parse
 
 export type HomePromos = z.infer<typeof homePromosSchema>;
-export type HomePromoItem = z.infer<typeof homePromoItemSchema>;
