@@ -1,24 +1,6 @@
-import { z } from "zod";
+// cyborgti-web/src/data/promos/homePromosSchema.ts
+// ✅ Este archivo ahora NO define un schema diferente.
+// ✅ Re-exporta el schema oficial desde ./schema para evitar inconsistencias (href null vs undefined).
 
-const HomePromoItemSchema = z.object({
-  id: z.string(),
-  label: z.string(),
-  image: z.string(),
-  href: z.string().optional(), // <- opcional (para la promo informativa 10%)
-});
-
-const HomeFeaturedSchema = z.object({
-  id: z.string(),
-  label: z.string().optional().default(""),
-  image: z.string(),
-  href: z.string().optional(),
-});
-
-export const homePromosSchema = z
-  .object({
-    top: z.array(HomePromoItemSchema).default([]),
-    featured: HomeFeaturedSchema.optional(),
-  })
-  .passthrough(); // <- permite "promos": [...] sin romper el parse
-
-export type HomePromos = z.infer<typeof homePromosSchema>;
+export { HomePromosSchema as homePromosSchema } from "./schema";
+export type { HomePromos } from "./schema";

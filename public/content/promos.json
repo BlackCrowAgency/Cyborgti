@@ -31,7 +31,9 @@
       "activeTo": "2026-02-15",
       "href": "/promociones/2x1-ccna-cyberops",
       "courses": ["ccna-200-301", "cyberops-associate"],
-      "bundlePricePEN": 299
+      "bundlePricePEN": 299,
+      "priority": 100,
+      "badge": "2x1"
     },
     {
       "id": "10off-web",
@@ -43,7 +45,9 @@
       "activeTo": "2026-12-31",
       "discountPercent": 10,
       "href": null,
-      "courses": []
+      "courses": [],
+      "priority": 10,
+      "badge": "-10%"
     }
   ]
 }

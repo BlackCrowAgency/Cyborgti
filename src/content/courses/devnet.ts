@@ -1,15 +1,23 @@
-import type { CourseInput } from "@/data/courses/schema";
+import type { CourseDTO } from "@/data/courses/schema";
 
-export const devnet: CourseInput = {
+export const course: CourseDTO = {
   slug: "devnet",
-  title: "DevNet",
-  shortDescription: "Automatización y APIs para redes: base DevNet con enfoque práctico.",
+  title: "Cisco DevNet • Automatización & APIs",
+  shortDescription: "Automatiza redes: APIs, scripting y fundamentos DevOps.",
   longDescription:
-    "Aprende a automatizar tareas de red con APIs y herramientas modernas. Ideal para perfiles NetOps/DevOps.",
+    "Entra a la automatización moderna: conceptos de API, autenticación, requests, JSON, e integración con plataformas. Ideal si deseas moverte a NetDevOps y aumentar tu productividad operando redes.",
   pricePEN: 240,
   level: "Intermedio",
-  durationWeeks: 8,
-  includes: ["Clases grabadas", "Proyectos", "Recursos", "Soporte por comunidad"],
-  tags: ["DevNet", "Automatización", "APIs"],
-  cover: "/images/courses/devnet.jpg",
+  durationWeeks: 6,
+  includes: [
+    "Fundamentos de APIs (REST)",
+    "Automatización de tareas repetitivas",
+    "Buenas prácticas (estructura y seguridad)",
+    "Ejercicios guiados y plantillas",
+    "Mini-proyecto integrador",
+  ],
+  tags: ["Cisco", "DevNet", "APIs", "Automatización", "NetDevOps"],
+  cover: "/images/course-devnet.jpg",
 };
+
+export default course;

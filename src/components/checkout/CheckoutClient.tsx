@@ -5,52 +5,27 @@ import { useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { formatPEN } from "@/lib/money";
 import { useCartStore } from "@/features/cart/store";
-import type { CourseDTO } from "@/data/courses/schema";
+import type { Promo } from "@/data/promos/schema"; // ✅ de schema, no de applyPromo
+import { computeCheckoutTotals } from "@/data/promos/applyPromo";
 
 type Props = {
-  courses: CourseDTO[];
-  priceBySlug: Record<string, number>;
+  basePriceBySlug: Record<string, number>;
+  titleBySlug: Record<string, string>;
+  promos: Promo[];
 };
 
-type HydratedItem = {
-  slug: string;
-  qty: number;
-  title: string;
-  unitPricePEN: number;
-};
-
-export function CheckoutClient({ courses, priceBySlug }: Props) {
+export function CheckoutClient({ basePriceBySlug, titleBySlug, promos }: Props) {
   const items = useCartStore((s) => s.items);
   const clear = useCartStore((s) => s.clear);
 
-  // Mapa rápido para buscar cursos por slug
-  const courseBySlug = useMemo(() => {
-    return Object.fromEntries(courses.map((c) => [c.slug, c]));
-  }, [courses]);
-
-  // “Hydratamos” items del carrito con data del curso
-  const hydrated: HydratedItem[] = useMemo(() => {
-    return items
-      .map((i) => {
-        const c = courseBySlug[i.slug];
-        if (!c) return null;
-
-        const unitPrice =
-          priceBySlug[i.slug] ?? c.pricePEN ?? 0;
-
-        return {
-          slug: i.slug,
-          qty: i.qty,
-          title: c.title,
-          unitPricePEN: unitPrice,
-        };
-      })
-      .filter(Boolean) as HydratedItem[];
-  }, [items, courseBySlug, priceBySlug]);
-
-  const subtotal = useMemo(() => {
-    return hydrated.reduce((acc, it) => acc + it.unitPricePEN * it.qty, 0);
-  }, [hydrated]);
+  const totals = useMemo(() => {
+    return computeCheckoutTotals({
+      items,
+      basePriceBySlug,
+      titleBySlug,
+      promos,
+    });
+  }, [items, basePriceBySlug, titleBySlug, promos]);
 
   if (items.length === 0) {
     return (
@@ -58,9 +33,7 @@ export function CheckoutClient({ courses, priceBySlug }: Props) {
         <p className="text-white/80">Tu carrito está vacío.</p>
         <div className="mt-4">
           <Link href="/cursos">
-            <Button className="bg-brand-500 hover:bg-brand-500/90">
-              Explorar cursos
-            </Button>
+            <Button className="bg-brand-500 hover:bg-brand-500/90">Explorar cursos</Button>
           </Link>
         </div>
       </div>
@@ -73,29 +46,81 @@ export function CheckoutClient({ courses, priceBySlug }: Props) {
         <h2 className="text-lg font-semibold text-white/95">Resumen</h2>
 
         <div className="mt-4 space-y-3">
-          {hydrated.map((it) => (
-            <div
-              key={it.slug}
-              className="flex items-start justify-between gap-4 border-b border-border/40 pb-3"
-            >
-              <div>
-                <div className="text-white/90">{it.title}</div>
-                <div className="text-sm text-white/60">Cantidad: {it.qty}</div>
-              </div>
+          {totals.lines.map((l) => {
+            if (l.kind === "bundle") {
+              return (
+                <div key={`bundle-${l.promoId}`} className="border-b border-border/40 pb-3">
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <div className="text-white/90 font-semibold">{l.title}</div>
+                      <div className="text-sm text-white/60">
+                        Incluye: {l.includes.join(" + ")}
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-white/90">{formatPEN(l.unitPricePEN)}</div>
+                      <div className="text-sm text-white/60">{formatPEN(l.lineTotalPEN)}</div>
+                    </div>
+                  </div>
+                </div>
+              );
+            }
 
-              <div className="text-right">
-                <div className="text-white/90">{formatPEN(it.unitPricePEN)}</div>
-                <div className="text-sm text-white/60">
-                  {formatPEN(it.unitPricePEN * it.qty)}
+            const hasDiscount = l.unitPricePEN < l.baseUnitPricePEN;
+
+            return (
+              <div
+                key={l.slug}
+                className="flex items-start justify-between gap-4 border-b border-border/40 pb-3"
+              >
+                <div>
+                  <div className="text-white/90">{l.title}</div>
+                  <div className="text-sm text-white/60">Cantidad: {l.qty}</div>
+                </div>
+
+                <div className="text-right">
+                  {hasDiscount ? (
+                    <>
+                      <div className="text-xs text-white/50 line-through">
+                        {formatPEN(l.baseUnitPricePEN)}
+                      </div>
+                      <div className="text-white/90">{formatPEN(l.unitPricePEN)}</div>
+                    </>
+                  ) : (
+                    <div className="text-white/90">{formatPEN(l.unitPricePEN)}</div>
+                  )}
+
+                  <div className="text-sm text-white/60">{formatPEN(l.lineTotalPEN)}</div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
-        <div className="mt-6 flex items-center justify-between">
-          <span className="text-white/70">Subtotal</span>
-          <span className="text-white/95 font-semibold">{formatPEN(subtotal)}</span>
+        <div className="mt-6 space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="text-white/70">Subtotal</span>
+            <span className="text-white/95 font-semibold">{formatPEN(totals.subtotalPEN)}</span>
+          </div>
+
+          {totals.discounts.length ? (
+            <div className="rounded-xl border border-white/10 bg-black/20 p-4">
+              <div className="text-sm font-semibold text-white/90">Descuentos</div>
+              <div className="mt-2 space-y-1">
+                {totals.discounts.map((d) => (
+                  <div key={d.label} className="flex items-center justify-between text-sm">
+                    <span className="text-white/70">{d.label}</span>
+                    <span className="text-white/90">- {formatPEN(d.amountPEN)}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : null}
+
+          <div className="flex items-center justify-between pt-2">
+            <span className="text-white/80">Total</span>
+            <span className="text-white font-semibold text-lg">{formatPEN(totals.totalPEN)}</span>
+          </div>
         </div>
       </div>
 
@@ -107,9 +132,7 @@ export function CheckoutClient({ courses, priceBySlug }: Props) {
         </p>
 
         <div className="mt-6 space-y-3">
-          <Button className="w-full bg-brand-500 hover:bg-brand-500/90">
-            Continuar (Demo)
-          </Button>
+          <Button className="w-full bg-brand-500 hover:bg-brand-500/90">Continuar (Demo)</Button>
 
           <Button
             variant="outline"

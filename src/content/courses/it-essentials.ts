@@ -1,15 +1,23 @@
-import type { CourseInput } from "@/data/courses/schema";
+import type { CourseDTO } from "@/data/courses/schema";
 
-export const itEssentials: CourseInput = {
+export const course: CourseDTO = {
   slug: "it-essentials",
-  title: "IT Essentials",
-  shortDescription: "Fundamentos de hardware, software, redes y soporte técnico.",
+  title: "IT Essentials • Soporte & Fundamentos TI",
+  shortDescription: "Hardware, sistemas, redes básicas y troubleshooting profesional.",
   longDescription:
-    "Ideal para comenzar en IT: diagnóstico, componentes, sistemas operativos y base de redes. Enfoque práctico.",
+    "Base sólida para iniciar en TI: componentes de PC, sistemas operativos, redes básicas, seguridad esencial, soporte y diagnóstico. Enfoque práctico para roles helpdesk/soporte técnico.",
   pricePEN: 200,
   level: "Inicial",
-  durationWeeks: 6,
-  includes: ["Clases grabadas", "Retos prácticos", "Certificado de culminación"],
-  tags: ["IT", "Soporte", "Fundamentos"],
-  cover: "/images/courses/itess.jpg",
+  durationWeeks: 5,
+  includes: [
+    "Fundamentos de hardware y mantenimiento",
+    "Troubleshooting paso a paso",
+    "Conceptos clave de redes y seguridad",
+    "Guías y plantillas para soporte",
+    "Evaluaciones prácticas",
+  ],
+  tags: ["Soporte", "Hardware", "Troubleshooting", "IT", "Fundamentos"],
+  cover: "/images/course-itess.jpg",
 };
+
+export default course;

@@ -1,23 +1,24 @@
 import { CheckoutClient } from "@/components/checkout/CheckoutClient";
 import { getAllCourses } from "@/data/courses/getAll";
+import { getActivePromos } from "@/data/promos/getActivePromos";
 
-export default function CheckoutPage() {
-  const courses = getAllCourses();
+export const revalidate = 60;
 
-  const priceBySlug = Object.fromEntries(
-    courses.map((c) => [c.slug, c.pricePEN])
-  );
+export default async function CheckoutPage() {
+  const courses = await Promise.resolve(getAllCourses());
+  const promos = await getActivePromos();
+
+  const basePriceBySlug: Record<string, number> = {};
+  const titleBySlug: Record<string, string> = {};
+
+  for (const c of courses) {
+    basePriceBySlug[c.slug] = c.pricePEN;
+    titleBySlug[c.slug] = c.title;
+  }
 
   return (
-    <main className="mx-auto max-w-7xl px-4 py-10">
-      <header className="mb-8">
-        <h1 className="h2">Checkout</h1>
-        <p className="muted mt-2">
-          Revisión final antes de pagar. (Mercado Pago se integra luego)
-        </p>
-      </header>
-
-      <CheckoutClient courses={courses} priceBySlug={priceBySlug} />
+    <main className="mx-auto min-h-dvh max-w-7xl px-4 py-10">
+      <CheckoutClient basePriceBySlug={basePriceBySlug} titleBySlug={titleBySlug} promos={promos} />
     </main>
   );
 }

@@ -1,85 +1,82 @@
+// src/data/promos/schema.ts
 import { z } from "zod";
 
-/** Card usada en home (2 arriba + 1 portada) */
+/* ------------------ HOME ------------------ */
+
 export const HomePromoCardSchema = z.object({
   id: z.string(),
-  label: z.string().optional(),
+  label: z.string().optional().default(""),
   image: z.string(),
-  /** null => tarjeta informativa (no navega) */
-  href: z.string().nullable(),
-});
-
-export const HomePromosSchema = z.object({
-  top: z.array(HomePromoCardSchema).default([]),
-  featured: HomePromoCardSchema.optional(),
-});
-
-/** Promo tipo bundle (2x1, pack, etc.) */
-export const BundlePromoSchema = z.object({
-  id: z.string(),
-  type: z.literal("bundle"),
-  title: z.string(),
-  subtitle: z.string().optional(),
-  badge: z.string().optional(),
-  image: z.string(),
-
-  /** href puede ser null si fuera informativa (por ahora para bundle normalmente viene con ruta) */
-  href: z.string().nullable(),
-
-  activeFrom: z.string(), // ISO date string
-  activeTo: z.string(), // ISO date string
-
-  courses: z.array(z.string()).default([]), // slugs de cursos involucrados
-  bundlePricePEN: z.number(),
-});
-
-/** Promo tipo percent (descuento %) */
-export const PercentPromoSchema = z.object({
-  id: z.string(),
-  type: z.literal("percent"),
-  title: z.string(),
-  subtitle: z.string().optional(),
-  badge: z.string().optional(),
-  image: z.string(),
-
-  /** Puede ser null si es solo informativa */
-  href: z.string().nullable(),
-
-  activeFrom: z.string(),
-  activeTo: z.string(),
-
-  discountPercent: z.number().min(1).max(90),
-
-  /**
-   * Si viene vacío => aplica a todos los cursos
-   * Si viene con slugs => solo a esos
-   */
-  courseSlugs: z.array(z.string()).optional(),
-});
-
-export const PromoSchema = z.discriminatedUnion("type", [
-  BundlePromoSchema,
-  PercentPromoSchema,
-]);
-
-/** Store completo: lo que guardas en Edge Config en la key "promos" */
-export const PromoStoreSchema = z.object({
-  home: z
-    .object({
-      top: z.array(HomePromoCardSchema).default([]),
-      featured: HomePromoCardSchema.optional(),
-    })
-    .default({ top: [], featured: undefined }),
-  items: z.array(PromoSchema).default([]),
+  href: z.string().nullable().default(null), // ✅ tu JSON usa null
 });
 
 export type HomePromoCard = z.infer<typeof HomePromoCardSchema>;
+
+export const HomePromosSchema = z.object({
+  top: z.array(HomePromoCardSchema).default([]),
+  featured: HomePromoCardSchema.nullable().default(null),
+});
+
 export type HomePromos = z.infer<typeof HomePromosSchema>;
+
+/* ------------------ ITEMS ------------------ */
+
+const PromoBaseSchema = z.object({
+  id: z.string(),
+  type: z.enum(["bundle", "percent"]),
+  title: z.string(),
+  subtitle: z.string().optional().default(""),
+  image: z.string(),
+  activeFrom: z.string(), // YYYY-MM-DD
+  activeTo: z.string(), // YYYY-MM-DD
+  href: z.string().nullable().default(null),
+  priority: z.number().optional().default(0),
+  badge: z.string().optional().default(""),
+});
+
+export const PromoBundleSchema = PromoBaseSchema.extend({
+  type: z.literal("bundle"),
+  courses: z.array(z.string()).default([]),
+  bundlePricePEN: z.number(),
+});
+
+export const PromoPercentSchema = PromoBaseSchema.extend({
+  type: z.literal("percent"),
+  discountPercent: z.number(),
+  // [] => aplica a todos
+  courses: z.array(z.string()).default([]),
+});
+
+export const PromoSchema = z.union([PromoBundleSchema, PromoPercentSchema]);
 export type Promo = z.infer<typeof PromoSchema>;
-export type PromoStore = z.infer<typeof PromoStoreSchema>;
+
+export const PromosPayloadSchema = z.object({
+  home: HomePromosSchema.default({ top: [], featured: null }),
+  items: z.array(PromoSchema).default([]),
+});
+
+export type PromosPayload = z.infer<typeof PromosPayloadSchema>;
 
 /**
- * Compatibilidad con imports antiguos que tenías (PromoDTO, etc.)
- * Si ya no lo usas, igual no estorba.
+ * Acepta:
+ * 1) { home, items }
+ * 2) { promos: { home, items } }
  */
-export type PromoDTO = Promo;
+export function normalizePromosPayload(raw: unknown): PromosPayload {
+  const maybeWrapped =
+    raw &&
+    typeof raw === "object" &&
+    raw !== null &&
+    "promos" in (raw as Record<string, unknown>)
+      ? (raw as { promos: unknown }).promos
+      : raw;
+
+  const parsed = PromosPayloadSchema.safeParse(maybeWrapped);
+  if (parsed.success) return parsed.data;
+
+  // fallback seguro
+  return {
+    home: { top: [], featured: null },
+    items: [],
+  };
+}

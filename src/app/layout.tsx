@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { Orbitron } from "next/font/google";
+import { TopTicker } from "@/components/home/TopTicker";
 import { Navbar } from "@/components/common/Navbar";
 
 const orbitron = Orbitron({
@@ -22,6 +23,7 @@ export default function RootLayout({
   return (
     <html lang="es" className={`${orbitron.variable} dark`}>
       <body className="scrollbar-thin">
+        <TopTicker />
         <Navbar />
         {children}
       </body>

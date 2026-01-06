@@ -1,25 +1,30 @@
+// src/data/promos/getActivePromos.ts
 import { getPromos } from "./getPromos";
 import type { Promo } from "./schema";
 
-function toTime(dateStr: string): number {
-  const t = new Date(dateStr).getTime();
-  return Number.isFinite(t) ? t : 0;
+function dayStartUTC(dateStr: string) {
+  return new Date(`${dateStr}T00:00:00.000Z`).getTime();
+}
+function dayEndUTC(dateStr: string) {
+  return new Date(`${dateStr}T23:59:59.999Z`).getTime();
 }
 
-export async function getActivePromos(now = new Date()): Promise<Promo[]> {
-  const store = await getPromos();
-  const nowT = now.getTime();
+export function isPromoActiveNow(p: Promo, now = Date.now()) {
+  const start = dayStartUTC(p.activeFrom);
+  const end = dayEndUTC(p.activeTo);
+  return now >= start && now <= end;
+}
 
-  return store.items
-    .filter((p) => {
-      const from = toTime(p.activeFrom);
-      const to = toTime(p.activeTo);
-      return from <= nowT && nowT <= to;
-    })
-    .sort((a, b) => toTime(b.activeFrom) - toTime(a.activeFrom));
+export async function getActivePromos(): Promise<Promo[]> {
+  const payload = await getPromos();
+  const now = Date.now();
+
+  return payload.items
+    .filter((p) => isPromoActiveNow(p, now))
+    .sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0));
 }
 
 export async function getTopActivePromo(): Promise<Promo | null> {
-  const actives = await getActivePromos();
-  return actives[0] ?? null;
+  const active = await getActivePromos();
+  return active[0] ?? null;
 }

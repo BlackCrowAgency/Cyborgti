@@ -1,16 +1,10 @@
-import { ccna200301 } from "./ccna-200-301";
-import { pythonFundamentos } from "./python-fundamentos";
+import type { CourseDTO } from "@/data/courses/schema";
 
-import { ccnpEnterprise } from "./ccnp-enterprise";
-import { itEssentials } from "./it-essentials";
-import { cyberopsAssociate } from "./cyberops-associate";
-import { devnet } from "./devnet"; // si creaste devnet.ts
+import ccna from "./ccna-200-301";
+import ccnp from "./ccnp-enterprise";
+import cyberops from "./cyberops-associate";
+import devnet from "./devnet";
+import itess from "./it-essentials";
+import python from "./python-fundamentos";
 
-export const courseContent = [
-  ccna200301,
-  pythonFundamentos,
-  ccnpEnterprise,
-  itEssentials,
-  cyberopsAssociate,
-  devnet, // si no creaste devnet.ts, borra esta línea
-];
+export const allCourses: CourseDTO[] = [ccna, ccnp, cyberops, devnet, itess, python];

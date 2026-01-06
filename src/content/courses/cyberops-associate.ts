@@ -1,15 +1,23 @@
-import type { CourseInput } from "@/data/courses/schema";
+import type { CourseDTO } from "@/data/courses/schema";
 
-export const cyberopsAssociate: CourseInput = {
+export const course: CourseDTO = {
   slug: "cyberops-associate",
-  title: "CyberOps Associate",
-  shortDescription: "SOC fundamentals: monitoreo, eventos, alertas y respuesta inicial.",
+  title: "Cisco CyberOps Associate",
+  shortDescription: "Fundamentos SOC: monitoreo, detección y respuesta a incidentes.",
   longDescription:
-    "Ruta para iniciar en operaciones de ciberseguridad: conceptos, herramientas, análisis básico y mentalidad SOC.",
+    "Aprende el rol del analista SOC, conceptos de amenazas, telemetría, eventos, alertas, SIEM, tipos de ataques y fundamentos de respuesta a incidentes. Orientado a un enfoque práctico y profesional.",
   pricePEN: 200,
   level: "Intermedio",
-  durationWeeks: 8,
-  includes: ["Clases grabadas", "Casos prácticos", "Recursos y guías", "Soporte por comunidad"],
-  tags: ["CyberOps", "SOC", "Ciberseguridad"],
-  cover: "/images/courses/cyberops.jpg",
+  durationWeeks: 6,
+  includes: [
+    "Ruta SOC (conceptos + práctica)",
+    "Casos de uso (alertas, logs, eventos)",
+    "Buenas prácticas de detección y triage",
+    "Material de apoyo y checklist SOC",
+    "Evaluaciones por unidad",
+  ],
+  tags: ["Ciberseguridad", "SOC", "SIEM", "Blue Team", "Cisco"],
+  cover: "/images/course-cyberops.jpg",
 };
+
+export default course;

@@ -1,15 +1,23 @@
-import type { CourseInput } from "@/data/courses/schema";
+import type { CourseDTO } from "@/data/courses/schema";
 
-export const ccna200301: CourseInput = {
+export const course: CourseDTO = {
   slug: "ccna-200-301",
-  title: "CCNA 200-301",
-  shortDescription: "Ruta completa para redes con enfoque a certificación.",
+  title: "CCNA 200-301 • Associate",
+  shortDescription: "Fundamentos de redes + preparación completa para CCNA (200-301).",
   longDescription:
-    "Programa estructurado para avanzar por módulos, practicar y preparar el examen. Ideal para autodidactas.",
-  pricePEN: 200,
-  level: "Intermedio",
-  durationWeeks: 10,
-  includes: ["Acceso a plataforma", "Clases grabadas", "Soporte por comunidad"],
-  tags: ["Redes", "Cisco", "Certificación"],
-  cover: "/images/courses/ccna.jpg",
+    "Domina routing & switching, IPv4/IPv6, VLANs, OSPF, fundamentos de seguridad, wireless y automatización básica. Enfoque práctico con laboratorios y material orientado al examen CCNA 200-301.",
+  pricePEN: 250,
+  level: "Inicial",
+  durationWeeks: 6,
+  includes: [
+    "Clases grabadas + sesiones de soporte",
+    "Laboratorios guiados (Packet Tracer / topologías)",
+    "Material descargable (resúmenes y checklists)",
+    "Simulacros tipo examen",
+    "Acceso a actualizaciones del contenido",
+  ],
+  tags: ["Cisco", "Redes", "Routing", "Switching", "CCNA"],
+  cover: "/images/course-ccna.jpg",
 };
+
+export default course;

@@ -1,22 +1,19 @@
-import type { CourseDTO } from "@/data/courses/schema";
+import type { Course } from "@/types/course";
+import type { getActivePromos } from "@/data/promos/getActivePromos";
 import { CourseCard } from "./CourseCard";
 
-type PriceMap = Record<string, number>;
+type ActivePromos = Awaited<ReturnType<typeof getActivePromos>>;
 
 type Props = {
-  courses: CourseDTO[];
-  finalPrices?: PriceMap; // slug -> finalPrice
+  courses: Course[];
+  promos: ActivePromos;
 };
 
-export function CourseGrid({ courses, finalPrices }: Props) {
+export function CourseGrid({ courses, promos }: Props) {
   return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-      {courses.map((c) => (
-        <CourseCard
-          key={c.slug}
-          course={c}
-          finalPricePEN={finalPrices?.[c.slug]}
-        />
+    <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-3">
+      {courses.map((course) => (
+        <CourseCard key={course.slug} course={course} promos={promos} />
       ))}
     </div>
   );

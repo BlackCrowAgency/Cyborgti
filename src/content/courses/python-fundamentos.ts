@@ -1,15 +1,23 @@
-import type { CourseInput } from "@/data/courses/schema";
+import type { CourseDTO } from "@/data/courses/schema";
 
-export const pythonFundamentos: CourseInput = {
+export const course: CourseDTO = {
   slug: "python-fundamentos",
-  title: "Python Fundamentos",
-  shortDescription: "Aprende Python desde cero con enfoque práctico.",
+  title: "Python • Fundamentos",
+  shortDescription: "Bases sólidas de Python para automatización y proyectos reales.",
   longDescription:
-    "Bases sólidas, ejercicios y mini-proyectos. Ideal para empezar a automatizar y construir.",
-  pricePEN: 149,
+    "Aprende Python desde cero: sintaxis, estructuras de datos, funciones, módulos, manejo de errores y buenas prácticas. Ideal para iniciar automatización, scripts y bases para DevNet/NetDevOps.",
+  pricePEN: 180,
   level: "Inicial",
-  durationWeeks: 6,
-  includes: ["Clases grabadas", "Retos prácticos", "Certificado de culminación"],
-  tags: ["Programación", "Python"],
-  cover: "/images/courses/python.jpg",
+  durationWeeks: 5,
+  includes: [
+    "Ejercicios prácticos por tema",
+    "Mini-proyectos (scripts útiles)",
+    "Buenas prácticas y estructura",
+    "Material descargable",
+    "Evaluaciones por módulo",
+  ],
+  tags: ["Python", "Programación", "Automatización", "Fundamentos"],
+  cover: "/images/course-python.jpg",
 };
+
+export default course;
