@@ -9,7 +9,13 @@ export function AddIconToCart({ slug }: { slug: string }) {
   return (
     <button
       type="button"
-      onClick={() => addItem(slug, 1)}
+      onClick={(e) => {
+        // ✅ evita que un <Link> padre navegue
+        e.preventDefault();
+        e.stopPropagation();
+
+        addItem(slug, 1);
+      }}
       className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-brand-500/25 ring-1 ring-brand-500/40 transition-cyborg hover:bg-brand-500/35 hover:glow-brand-soft"
       aria-label="Agregar al carrito"
     >

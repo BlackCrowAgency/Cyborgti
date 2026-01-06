@@ -5,6 +5,7 @@ import { AddPromoToCartButton } from "@/components/promo/AddPromoToCartButton";
 import { CheckoutCard } from "@/components/detail/CheckoutCard";
 import { TrustList } from "@/components/detail/TrustList";
 import { PricingDisplay } from "@/components/detail/PricingDisplay";
+import { TRUST_PRESET_PROMO } from "@/components/detail/trustPresets";
 
 export function PromoBuyPanel({
   pricePEN,
@@ -24,8 +25,9 @@ export function PromoBuyPanel({
 
 <TrustList
   className="mt-4"
-  items={["Acceso inmediato", "Soporte incluido", "Material descargable"]}
+  items={TRUST_PRESET_PROMO}
 />
+
 
 
       <div className="mt-5">

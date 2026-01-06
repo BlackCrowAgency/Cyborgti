@@ -17,7 +17,7 @@ export const course: CourseDTO = {
     "Evaluaciones prácticas",
   ],
   tags: ["Soporte", "Hardware", "Troubleshooting", "IT", "Fundamentos"],
-  cover: "/images/course-itess.jpg",
+  cover: "/cursos/it_essentials.png",
 };
 
 export default course;

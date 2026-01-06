@@ -6,6 +6,7 @@ import { formatPEN } from "@/lib/money";
 import { CheckoutCard } from "@/components/detail/CheckoutCard";
 import { TrustList } from "@/components/detail/TrustList";
 import { PricingDisplay } from "@/components/detail/PricingDisplay";
+import { TRUST_PRESET_COURSE } from "@/components/detail/trustPresets";
 
 export function CourseBuyPanel({
   slug,
@@ -34,8 +35,9 @@ export function CourseBuyPanel({
 
 <TrustList
   className="mt-4"
-  items={["Acceso inmediato", "Soporte incluido", "Material descargable"]}
+  items={TRUST_PRESET_COURSE.slice(0, 3)}
 />
+
 
 
       <div className="mt-5">

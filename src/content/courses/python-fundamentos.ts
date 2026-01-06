@@ -17,7 +17,7 @@ export const course: CourseDTO = {
     "Evaluaciones por módulo",
   ],
   tags: ["Python", "Programación", "Automatización", "Fundamentos"],
-  cover: "/images/course-python.jpg",
+  cover: "/cursos/python.png",
 };
 
 export default course;

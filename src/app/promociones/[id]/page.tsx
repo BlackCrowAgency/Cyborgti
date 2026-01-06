@@ -12,6 +12,7 @@ import { DetailHeader } from "@/components/detail/DetailHeader";
 import { DetailSection } from "@/components/detail/DetailSection";
 import { CourseMiniCard } from "@/components/course/CourseMiniCard";
 import { PromoMetaBadges } from "@/components/promo/PromoMetaBadges";
+import type { Metadata } from "next";
 
 export const revalidate = 60;
 
@@ -26,6 +27,54 @@ function uniqueStrings(list: string[]) {
     out.push(v);
   }
   return out;
+}
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id: rawId } = await params;
+  const id = decodeURIComponent(rawId);
+
+  const promos = await getActivePromos();
+  const promo = promos.find((p) => p.id === id);
+
+  if (!promo) {
+    return {
+      title: "Promoción no encontrada | CyborgTI",
+      robots: { index: false },
+    };
+  }
+
+  const title = `${promo.title} | Promoción CyborgTI`;
+  const description =
+    promo.subtitle ||
+    "Promoción por tiempo limitado. Accede a más de una especialidad con precio especial.";
+
+  const url = `https://cyborgti.pe/promociones/${promo.id}`;
+  const image = promo.image || "/images/og-default.jpg";
+
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: url,
+    },
+    openGraph: {
+      title,
+      description,
+      url,
+      siteName: "CyborgTI",
+      images: [{ url: image, width: 1200, height: 630 }],
+      type: "article",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [image],
+    },
+  };
 }
 
 export default async function PromoDetallePage({

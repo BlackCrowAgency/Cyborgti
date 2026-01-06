@@ -3,6 +3,7 @@ import "./globals.css";
 import { Orbitron } from "next/font/google";
 import { TopTicker } from "@/components/home/TopTicker";
 import { Navbar } from "@/components/common/Navbar";
+import { Footer } from "@/components/common/Footer";
 
 const orbitron = Orbitron({
   subsets: ["latin"],
@@ -10,10 +11,15 @@ const orbitron = Orbitron({
   weight: ["400", "500", "600", "700"],
 });
 
-export const metadata: Metadata = {
-  title: "CyborgTI",
-  description: "Cursos Cisco y formación IT - CyborgTI",
+export const metadata = {
+  title: {
+    default: "CyborgTI | Cursos de Tecnología y Ciberseguridad",
+    template: "%s | CyborgTI",
+  },
+  description:
+    "Plataforma de cursos online certificados en networking, ciberseguridad y programación.",
 };
+
 
 export default function RootLayout({
   children,
@@ -26,6 +32,7 @@ export default function RootLayout({
         <TopTicker />
         <Navbar />
         {children}
+        <Footer />
       </body>
     </html>
   );

@@ -24,8 +24,8 @@ export function CourseMiniCard({
       <div className="absolute inset-0">
         {cover ? (
           <div
-            className="absolute inset-0 bg-cover bg-center opacity-85 transition-cyborg group-hover:opacity-95"
-            style={{ backgroundImage: `url('${cover}')` }}
+            className="absolute inset-0 bg-cover bg-center opacity-85 transition-cyborg group-hover:opacity-95 group-hover:scale-[1.02]"
+            style={{ backgroundImage: `url(${cover})` }}
             aria-hidden="true"
           />
         ) : (

@@ -1,11 +1,13 @@
-export const TRUST_PRESET_DEFAULT = [
+export const TRUST_PRESET_COURSE = [
   "Acceso inmediato",
   "Soporte incluido",
   "Material descargable",
+  "Actualizaciones",
 ];
 
-export const TRUST_PRESET_COURSE_CHIPS = [
-  "Acceso inmediato",
+export const TRUST_PRESET_PROMO = [
+  "Acceso inmediato al contenido",
   "Soporte incluido",
-  "Actualizaciones",
+  "Material descargable",
+  "Precio especial por bundle",
 ];

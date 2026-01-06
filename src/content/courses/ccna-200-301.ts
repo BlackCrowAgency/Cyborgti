@@ -17,7 +17,7 @@ export const course: CourseDTO = {
     "Acceso a actualizaciones del contenido",
   ],
   tags: ["Cisco", "Redes", "Routing", "Switching", "CCNA"],
-  cover: "/images/course-ccna.jpg",
+  cover: "/cursos/ccna.png",
 };
 
 export default course;

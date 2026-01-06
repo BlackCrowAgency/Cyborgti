@@ -4,20 +4,22 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { motion, useAnimationFrame, type Variants } from "framer-motion";
 import { FiZap } from "react-icons/fi";
+
 import { AddIconToCart } from "@/components/course/AddIconToCart";
+import { CourseMiniCard } from "@/components/course/CourseMiniCard";
 
 type Card = {
   slug: string;
   title: string;
   price: string;
-  image: string;
+  image: string; // ruta pública válida
 };
 
 const CARDS: Card[] = [
-  { slug: "ccna-200-301", title: "CCNA Associate", price: "PEN 250.00", image: "/images/cat-ccna.jpg" },
-  { slug: "ccnp-enterprise", title: "CCNP Enterprise", price: "PEN 280.00", image: "/images/cat-ccnp.jpg" },
-  { slug: "it-essentials", title: "IT Essentials", price: "PEN 200.00", image: "/images/cat-itess.jpg" },
-  { slug: "cyberops-associate", title: "CyberOps Associate", price: "PEN 200.00", image: "/images/cat-cyberops.jpg" },
+  { slug: "ccna-200-301", title: "CCNA Associate", price: "PEN 250.00", image: "/cursos/ccna.png" },
+  { slug: "ccnp-enterprise", title: "CCNP Enterprise", price: "PEN 280.00", image: "/cursos/ccnp.png" },
+  { slug: "it-essentials", title: "IT Essentials", price: "PEN 200.00", image: "/cursos/it_essentials.png" },
+  { slug: "cyberops-associate", title: "CyberOps Associate", price: "PEN 200.00", image: "/cursos/cyberops.png" },
 ];
 
 const SPECIALTIES = ["CCNA", "CCNP", "CyberOps", "IT Essentials", "DevNet"] as const;
@@ -52,34 +54,28 @@ export function SpecialtiesSection() {
             transition={{ duration: 0.2, ease: "easeOut" }}
             className="group"
           >
-            {/* Card clickeable */}
-            <Link href={`/cursos/${c.slug}`} className="block">
-              <div className="relative overflow-hidden rounded-lg border border-brand-600/50 bg-white/5 shadow-card">
-                <div
-                  className="h-80 w-full bg-cover bg-center"
-                  style={{ backgroundImage: `url('${c.image}')` }}
-                  aria-hidden="true"
-                />
-                <div
-                  className="pointer-events-none absolute inset-0 bg-linear-to-t from-black/35 via-black/10 to-transparent"
-                  aria-hidden="true"
-                />
+            {/* ✅ usamos el mini card base (misma estética, misma lógica) */}
+            <CourseMiniCard
+              href={`/cursos/${c.slug}`}
+              title={c.title}
+              cover={c.image}
+              className="block"
+              cta=" "
+            />
+
+            <div className="mt-4 flex items-end justify-between gap-4 px-1">
+              <div className="text-white/90">
+                <div className="text-sm font-semibold tracking-[0.12em] uppercase">
+                  {c.title}
+                </div>
+                <div className="mt-1 text-sm text-white/70">{c.price}</div>
               </div>
 
-              <div className="mt-4 flex items-end justify-between gap-4">
-                <div className="text-white/90">
-                  <div className="text-sm font-semibold tracking-[0.12em] uppercase">
-                    {c.title}
-                  </div>
-                  <div className="mt-1 text-sm text-white/70">{c.price}</div>
-                </div>
-
-                {/* Importante: este botón NO debe navegar */}
-                <div onClick={(e) => e.preventDefault()}>
-                  <AddIconToCart slug={c.slug} />
-                </div>
-              </div>
-            </Link>
+              {/* ✅ este botón NO debe navegar */}
+<div className="shrink-0">
+  <AddIconToCart slug={c.slug} />
+</div>
+            </div>
           </motion.article>
         ))}
       </motion.div>

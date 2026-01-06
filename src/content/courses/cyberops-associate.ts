@@ -17,7 +17,7 @@ export const course: CourseDTO = {
     "Evaluaciones por unidad",
   ],
   tags: ["Ciberseguridad", "SOC", "SIEM", "Blue Team", "Cisco"],
-  cover: "/images/course-cyberops.jpg",
+  cover: "/cursos/cyberops.png",
 };
 
 export default course;

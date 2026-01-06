@@ -17,7 +17,7 @@ export const course: CourseDTO = {
     "Evaluaciones por módulo",
   ],
   tags: ["Cisco", "Enterprise", "Routing Avanzado", "Troubleshooting", "CCNP"],
-  cover: "/images/course-ccnp.jpg",
+  cover: "/cursos/ccnp.png",
 };
 
 export default course;

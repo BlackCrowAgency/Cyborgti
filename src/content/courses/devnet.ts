@@ -17,7 +17,7 @@ export const course: CourseDTO = {
     "Mini-proyecto integrador",
   ],
   tags: ["Cisco", "DevNet", "APIs", "Automatización", "NetDevOps"],
-  cover: "/images/course-devnet.jpg",
+  cover: "/cursos/devnet.png",
 };
 
 export default course;
