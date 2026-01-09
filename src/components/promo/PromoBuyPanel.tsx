@@ -1,5 +1,4 @@
 import { Button } from "@/components/ui/button";
-import { formatPEN } from "@/lib/money";
 import { AddPromoToCartButton } from "@/components/promo/AddPromoToCartButton";
 
 import { CheckoutCard } from "@/components/detail/CheckoutCard";
@@ -16,19 +15,13 @@ export function PromoBuyPanel({
 }) {
   return (
     <CheckoutCard title="CHECKOUT">
-<div>
-  <div className="text-sm text-white/55">Precio del bundle</div>
-  <PricingDisplay basePEN={pricePEN} size="md" showSave={false} className="mt-2" />
-  <div className="mt-2 text-xs text-white/55">{slugs.length} cursos incluidos</div>
-</div>
+      <div>
+        <div className="text-sm text-white/55">Precio del bundle</div>
+        <PricingDisplay basePEN={pricePEN} size="md" showSave={false} className="mt-2" />
+        <div className="mt-2 text-xs text-white/55">{slugs.length} cursos incluidos</div>
+      </div>
 
-
-<TrustList
-  className="mt-4"
-  items={TRUST_PRESET_PROMO}
-/>
-
-
+      <TrustList className="mt-4" items={TRUST_PRESET_PROMO} />
 
       <div className="mt-5">
         <AddPromoToCartButton slugs={slugs} label="COMPRAR PROMOCIÓN" />

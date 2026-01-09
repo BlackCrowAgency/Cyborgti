@@ -1,6 +1,6 @@
-import type { Metadata } from "next";
 import "./globals.css";
 import { Orbitron } from "next/font/google";
+import type { Metadata, Viewport } from "next";
 import { TopTicker } from "@/components/home/TopTicker";
 import { Navbar } from "@/components/common/Navbar";
 import { Footer } from "@/components/common/Footer";
@@ -11,7 +11,13 @@ const orbitron = Orbitron({
   weight: ["400", "500", "600", "700"],
 });
 
-export const metadata = {
+// ✅ CLAVE: viewport correcto para mobile
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+};
+
+export const metadata: Metadata = {
   title: {
     default: "CyborgTI | Cursos de Tecnología y Ciberseguridad",
     template: "%s | CyborgTI",
@@ -20,12 +26,7 @@ export const metadata = {
     "Plataforma de cursos online certificados en networking, ciberseguridad y programación.",
 };
 
-
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="es" className={`${orbitron.variable} dark`}>
       <body className="scrollbar-thin">

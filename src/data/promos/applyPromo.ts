@@ -1,8 +1,8 @@
 // src/data/promos/applyPromo.ts
 import type { Promo } from "./schema";
 
-export type PromoBundle = Extract<Promo, { type: "bundle" }>;
-export type PromoPercent = Extract<Promo, { type: "percent" }>;
+type PromoBundle = Extract<Promo, { type: "bundle" }>;
+type PromoPercent = Extract<Promo, { type: "percent" }>;
 
 export type DisplayPrice = {
   basePricePEN: number;
@@ -16,7 +16,7 @@ const parseISODateUTC = (s: string) => {
   return new Date(Date.UTC(y, (m ?? 1) - 1, d ?? 1, 0, 0, 0));
 };
 
-export function isPromoActive(p: Promo, now = new Date()) {
+function isPromoActive(p: Promo, now = new Date()) {
   const from = parseISODateUTC(p.activeFrom);
   const to = parseISODateUTC(p.activeTo);
   return now >= from && now <= new Date(to.getTime() + 24 * 60 * 60 * 1000 - 1);
@@ -32,7 +32,7 @@ function appliesToCourse(p: PromoPercent, slug: string) {
   return list.includes(slug);
 }
 
-export function getBestPercentPromoForCourse(promos: Promo[], slug: string, now = new Date()) {
+function getBestPercentPromoForCourse(promos: Promo[], slug: string, now = new Date()) {
   const candidates = promos
     .filter((p): p is PromoPercent => p.type === "percent")
     .filter((p) => isPromoActive(p, now))
@@ -49,7 +49,7 @@ export function getBestPercentPromoForCourse(promos: Promo[], slug: string, now 
   return candidates[0];
 }
 
-export function getFirstBundlePromoForCourse(promos: Promo[], slug: string, now = new Date()) {
+function getFirstBundlePromoForCourse(promos: Promo[], slug: string, now = new Date()) {
   const bundles = promos
     .filter((p): p is PromoBundle => p.type === "bundle")
     .filter((p) => isPromoActive(p, now))
@@ -82,30 +82,6 @@ export function getDisplayPriceForCourse(
     badge: `${percent.discountPercent}% OFF`,
     bundlePromo: bundlePromo ?? undefined,
   };
-}
-
-/** Para /cursos grid: precios finales + badges */
-export function buildCourseMaps(
-  promos: Promo[],
-  courses: { slug: string; pricePEN: number }[],
-  now = new Date()
-) {
-  const finalPrices: Record<string, number> = {};
-  const promoBadges: Record<string, string[]> = {};
-
-  for (const c of courses) {
-    const view = getDisplayPriceForCourse(promos, c.slug, c.pricePEN, now);
-    finalPrices[c.slug] = view.finalPricePEN;
-
-    const badges: string[] = [];
-    if (view.badge) badges.push(view.badge);
-    if (view.bundlePromo?.badge) badges.push(view.bundlePromo.badge);
-    else if (view.bundlePromo) badges.push("PACK");
-
-    if (badges.length) promoBadges[c.slug] = badges;
-  }
-
-  return { finalPrices, promoBadges };
 }
 
 /* ------------------- CHECKOUT ------------------- */
@@ -151,13 +127,11 @@ export function computeCheckoutTotals(args: {
   const now = args.now ?? new Date();
   const activePromos = args.promos.filter((p) => isPromoActive(p, now));
 
-  // Subtotal base: SIEMPRE con precios base
   const subtotalPEN = args.items.reduce((acc, it) => {
     const base = args.basePriceBySlug[it.slug] ?? 0;
     return acc + base * it.qty;
   }, 0);
 
-  // 1) líneas curso con % (si aplica)
   let lines: CheckoutLine[] = args.items.map((it) => {
     const baseUnit = args.basePriceBySlug[it.slug] ?? 0;
     const view = getDisplayPriceForCourse(activePromos, it.slug, baseUnit, now);
@@ -175,7 +149,6 @@ export function computeCheckoutTotals(args: {
 
   const discounts: DiscountLine[] = [];
 
-  // 2) aplicar bundles (pack NO recibe %)
   const bundles = activePromos
     .filter((p): p is PromoBundle => p.type === "bundle")
     .sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0));
@@ -184,7 +157,6 @@ export function computeCheckoutTotals(args: {
     const coursesInPack = b.courses ?? [];
     if (coursesInPack.length === 0) continue;
 
-    // ¿tiene al menos 1 de cada?
     const hasAll = coursesInPack.every((slug) => {
       const line = lines.find(
         (x) => x.kind === "course" && x.slug === slug
@@ -193,7 +165,6 @@ export function computeCheckoutTotals(args: {
     });
     if (!hasAll) continue;
 
-    // Comparación contra SUMA BASE (no contra precio con 10%)
     const sumBaseSingles = coursesInPack.reduce((acc, slug) => {
       const base = args.basePriceBySlug[slug] ?? 0;
       return acc + base;
@@ -201,7 +172,6 @@ export function computeCheckoutTotals(args: {
 
     if (b.bundlePricePEN >= sumBaseSingles) continue;
 
-    // Reemplazar 1 unidad de cada curso por el bundle
     const next: CheckoutLine[] = [];
 
     for (const l of lines) {
@@ -215,14 +185,13 @@ export function computeCheckoutTotals(args: {
         continue;
       }
 
-      // restar 1 unidad (la unidad que se va al pack)
       const newQty = l.qty - 1;
       if (newQty <= 0) continue;
 
       next.push({
         ...l,
         qty: newQty,
-        lineTotalPEN: l.unitPricePEN * newQty, // mantiene % en lo restante
+        lineTotalPEN: l.unitPricePEN * newQty,
       });
     }
 
@@ -244,7 +213,6 @@ export function computeCheckoutTotals(args: {
     });
   }
 
-  // 3) descuento % final (SOLO sobre cursos que quedaron como curso)
   const percentSaved = lines
     .filter((l): l is Extract<CheckoutLine, { kind: "course" }> => l.kind === "course")
     .reduce((acc, l) => acc + (l.baseUnitPricePEN - l.unitPricePEN) * l.qty, 0);

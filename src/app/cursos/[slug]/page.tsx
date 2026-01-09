@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 
@@ -19,8 +18,6 @@ import { CourseMetaBadges } from "@/components/course/CourseMetaBadges";
 import { CourseHeroImage } from "@/components/course/CourseHeroImage";
 
 import { PricingDisplay } from "@/components/detail/PricingDisplay";
-import { TrustChips } from "@/components/detail/TrustChips";
-import { TRUST_PRESET_COURSE } from "@/components/detail/trustPresets";
 
 export const revalidate = 60;
 
@@ -28,6 +25,20 @@ export function generateStaticParams() {
   const courses = getAllCourses();
   return courses.map((c) => ({ slug: c.slug }));
 }
+
+const MODULES_BY_SLUG: Record<string, string[]> = {
+  "ccna-200-301": [
+    "CCNA 1: Introduction to Networks (ITN)",
+    "CCNA 2: Switching, Routing & Wireless Essentials (SRWE)",
+    "CCNA 3: Enterprise Networking, Security & Automation (ENSA)",
+  ],
+  "ccnp-enterprise": [
+    "CCNP Enterprise: Core Networking",
+    "CCNP Enterprise: Advanced Routing",
+  ],
+  "it-essentials": ["IT Essentials v7", "IT Essentials v8"],
+  "python-fundamentos": ["Python Essentials I", "Python Essentials II"],
+};
 
 export async function generateMetadata({
   params,
@@ -44,10 +55,10 @@ export async function generateMetadata({
     };
   }
 
-  const title = `${course.title} | Curso Online Certificado`;
+  const title = `${course.title} | Cisco NetAcad`;
   const description =
-    course.longDescription?.slice(0, 155) ||
-    `Aprende ${course.title} con acceso inmediato, soporte incluido y material descargable.`;
+    course.shortDescription?.slice(0, 155) ||
+    `Acceso oficial Cisco NetAcad para ${course.title}.`;
 
   const url = `https://cyborgti.pe/cursos/${course.slug}`;
   const image = course.cover || "/images/og-default.jpg";
@@ -89,6 +100,8 @@ export default async function CursoDetallePage({
   const all = await Promise.resolve(getAllCourses());
   const moreCourses = all.filter((c) => c.slug !== course.slug).slice(0, 4);
 
+  const modules = MODULES_BY_SLUG[course.slug];
+
   return (
     <DetailShell backHref="/cursos" backLabel="Volver a cursos">
       {/* PROMO STRIP */}
@@ -100,34 +113,28 @@ export default async function CursoDetallePage({
 
       {/* LAYOUT PRINCIPAL */}
       <section className="grid gap-10 lg:grid-cols-[520px_1fr] lg:items-start">
-        {/* LEFT: imagen */}
+        {/* LEFT */}
         <div>
           <CourseHeroImage cover={course.cover ?? null} />
-
-          <TrustChips
-            className="mt-5"
-            items={TRUST_PRESET_COURSE.slice(0, 3)}
-          />
         </div>
 
         {/* RIGHT */}
         <div className="min-w-0">
           <DetailHeader
             badges={
-              <CourseMetaBadges
-                level={course.level}
-                durationWeeks={course.durationWeeks}
-                tags={course.tags ?? []}
-                extraBadge={view.badge ?? null}
-                maxTags={6}
-              />
+<CourseMetaBadges
+  slug={course.slug}
+  level={course.level}
+  extraBadge={view.badge ?? null}
+/>
+
+
             }
             title={course.title}
-subtitle={
-  course.shortDescription ||
-  "Acceso inmediato, soporte incluido y material descargable."
-}
-
+            subtitle={
+              course.shortDescription ||
+              "Acceso oficial por 3 meses (renovable) con certificación Cisco NetAcad."
+            }
           />
 
           <PricingDisplay
@@ -147,11 +154,26 @@ subtitle={
                 kicker="DESCRIPCIÓN"
                 kickerClassName="text-[11px] uppercase tracking-[0.35em] text-brand-500"
               >
-                <p className="text-sm md:text-base leading-relaxed text-white/70">
+                <p className="text-sm leading-relaxed text-white/70 md:text-base">
                   {course.longDescription}
                 </p>
               </DetailSection>
 
+              {/* MÓDULOS OFICIALES (si aplica) */}
+              {modules?.length ? (
+                <DetailSection kicker="MÓDULOS OFICIALES" className="mt-10">
+                  <ul className="grid gap-3 text-sm text-white/70">
+                    {modules.map((x) => (
+                      <li key={x} className="flex gap-3">
+                        <span className="mt-[7px] h-1.5 w-1.5 rounded-full bg-brand-500/70" />
+                        <span className="flex-1">{x}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </DetailSection>
+              ) : null}
+
+              {/* INCLUYE (beneficios clave desde content) */}
               <DetailSection kicker="INCLUYE" className="mt-10">
                 <ul className="grid gap-3 text-sm text-white/70">
                   {course.includes.map((x) => (
@@ -179,7 +201,7 @@ subtitle={
       <section className="mt-16">
         <div className="flex items-center justify-between gap-4">
           <h2 className="text-3xl md:text-4xl font-semibold tracking-tight text-white">
-            MÁS CURSOS
+            Más cursos
           </h2>
           <div className="hidden sm:block h-px flex-1 bg-white/10" />
         </div>
@@ -200,7 +222,7 @@ subtitle={
           <div className="relative h-[220px] md:h-[280px]">
             <div
               className="absolute inset-0 bg-cover bg-center"
-              style={{ backgroundImage: "url('/images/banner-cursos.jpg')" }}
+              style={{ backgroundImage: "url('/banner/banner.png')" }}
               aria-hidden="true"
             />
             <div className="absolute inset-0 bg-black/55" aria-hidden="true" />

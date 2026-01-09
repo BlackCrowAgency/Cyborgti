@@ -9,7 +9,7 @@ function dayEndUTC(dateStr: string) {
   return new Date(`${dateStr}T23:59:59.999Z`).getTime();
 }
 
-export function isPromoActiveNow(p: Promo, now = Date.now()) {
+function isPromoActiveNow(p: Promo, now = Date.now()) {
   const start = dayStartUTC(p.activeFrom);
   const end = dayEndUTC(p.activeTo);
   return now >= start && now <= end;
@@ -22,9 +22,4 @@ export async function getActivePromos(): Promise<Promo[]> {
   return payload.items
     .filter((p) => isPromoActiveNow(p, now))
     .sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0));
-}
-
-export async function getTopActivePromo(): Promise<Promo | null> {
-  const active = await getActivePromos();
-  return active[0] ?? null;
 }

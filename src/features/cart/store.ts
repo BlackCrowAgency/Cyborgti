@@ -6,33 +6,41 @@ import type { CartItem, CartState } from "./types";
 
 const STORAGE_KEY = "cyborgti-cart";
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
+}
+
 function normalizeItems(input: unknown): CartItem[] {
   if (!input) return [];
 
-  // Si ya es la forma actual
+  // Forma actual: CartItem[]
   if (Array.isArray(input)) {
     return input
-      .map((x: any) => ({
-        slug: String(x?.slug ?? ""),
-        qty: Number(x?.qty ?? 0),
-      }))
-      .filter((x) => x.slug && x.qty > 0);
+      .map((x: unknown) => {
+        if (!isRecord(x)) return null;
+        const slug = String(x.slug ?? "");
+        const qty = Number(x.qty ?? 0);
+        return { slug, qty };
+      })
+      .filter((x): x is CartItem => !!x && x.slug.length > 0 && x.qty > 0);
   }
 
-  // Si antes guardaste algo como { cart: [...] } o similar
-  if (typeof input === "object") {
-    const anyObj = input as any;
+  // Formas antiguas: { items: [...] } o { cart: [...] }
+  if (isRecord(input)) {
+    const items = input.items;
+    const cart = input.cart;
 
-    if (Array.isArray(anyObj.items)) return normalizeItems(anyObj.items);
-    if (Array.isArray(anyObj.cart)) return normalizeItems(anyObj.cart);
+    if (Array.isArray(items)) return normalizeItems(items);
+    if (Array.isArray(cart)) return normalizeItems(cart);
   }
 
   return [];
 }
 
+
 export const useCartStore = create<CartState>()(
   persist(
-    (set, get) => ({
+    (set) => ({
       items: [],
 
       addItem: (slug, qty = 1) => {
@@ -79,25 +87,15 @@ export const useCartStore = create<CartState>()(
       name: STORAGE_KEY,
       version: 2,
       storage: createJSONStorage(() => localStorage),
-
-      migrate: (persistedState, fromVersion) => {
-        // Si había algo guardado viejo, lo normalizamos a { items: CartItem[] }
-        const anyState = persistedState as any;
-
-        // Caso típico: persistedState ya es { items: [...] }
-        if (anyState && typeof anyState === "object") {
-          const items = normalizeItems(anyState.items ?? anyState.cart ?? anyState);
-          return { ...anyState, items };
-        }
-
-        return { items: [] };
+    migrate: (persistedState) => {
+      if (isRecord(persistedState)) {
+        const items = normalizeItems(
+          (persistedState.items ?? persistedState.cart ?? persistedState) as unknown
+        );
+        return { ...persistedState, items };
+      }
+      return { items: [] };
       },
     }
   )
 );
-
-/**
- * Alias para compatibilidad con código viejo que importaba useCart.
- * Así no vuelves a romper imports.
- */
-export const useCart = useCartStore;

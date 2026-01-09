@@ -11,9 +11,17 @@ type Props = {
 
 export function CourseGrid({ courses, promos }: Props) {
   return (
-    <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-3">
+    <div
+      className="
+        grid grid-cols-2 gap-3
+        sm:grid-cols-2 sm:gap-5
+        lg:grid-cols-3 lg:gap-6
+      "
+    >
       {courses.map((course) => (
-        <CourseCard key={course.slug} course={course} promos={promos} />
+        <div key={course.slug} className="min-w-0">
+          <CourseCard course={course} promos={promos} />
+        </div>
       ))}
     </div>
   );

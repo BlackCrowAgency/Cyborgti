@@ -1,7 +1,4 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
-
-import { Badge } from "@/components/ui/badge";
 
 import { getActivePromos } from "@/data/promos/getActivePromos";
 import { getCourseBySlug } from "@/data/courses/getBySlug";

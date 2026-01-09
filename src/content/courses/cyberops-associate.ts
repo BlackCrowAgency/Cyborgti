@@ -1,22 +1,23 @@
 import type { CourseDTO } from "@/data/courses/schema";
 
-export const course: CourseDTO = {
+const course: CourseDTO = {
   slug: "cyberops-associate",
   title: "Cisco CyberOps Associate",
-  shortDescription: "Fundamentos SOC: monitoreo, detección y respuesta a incidentes.",
+  shortDescription:
+    "Acceso oficial Cisco NetAcad por 3 meses + base SOC para monitoreo, detección y respuesta.",
   longDescription:
-    "Aprende el rol del analista SOC, conceptos de amenazas, telemetría, eventos, alertas, SIEM, tipos de ataques y fundamentos de respuesta a incidentes. Orientado a un enfoque práctico y profesional.",
+    "Enfoque práctico orientado a rol SOC: detección, análisis y respuesta a incidentes con la ruta oficial de Cisco NetAcad.",
   pricePEN: 200,
   level: "Intermedio",
   durationWeeks: 6,
   includes: [
-    "Ruta SOC (conceptos + práctica)",
-    "Casos de uso (alertas, logs, eventos)",
-    "Buenas prácticas de detección y triage",
-    "Material de apoyo y checklist SOC",
-    "Evaluaciones por unidad",
+    "Acceso oficial por 3 meses (renovable sin perder avance).",
+    "Certificados oficiales Cisco NetAcad.",
+    "Insignias digitales.",
+    "Voucher de descuento para examen internacional CyberOps 200-201.",
+    "Clases grabadas (link compartido por WhatsApp).",
   ],
-  tags: ["Ciberseguridad", "SOC", "SIEM", "Blue Team", "Cisco"],
+  tags: ["Ciberseguridad", "SOC", "CyberOps", "Multilenguaje"],
   cover: "/cursos/cyberops.png",
 };
 

@@ -15,32 +15,27 @@ function PromoTile({
     <div
       className={[
         "group relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 shadow-card",
-        clickable
-          ? "transition-cyborg hover:border-white/20 hover:shadow-brand"
-          : "",
+        clickable ? "transition-cyborg hover:border-white/20 hover:shadow-brand" : "",
       ].join(" ")}
     >
-      {/* bg */}
       <div
         className="absolute inset-0 bg-cover bg-center"
         style={{ backgroundImage: `url('${promo.image}')` }}
         aria-hidden="true"
       />
-      {/* overlay */}
       <div className="absolute inset-0 bg-black/55" aria-hidden="true" />
       <div
         className="absolute inset-0 bg-linear-to-t from-black/75 via-black/25 to-transparent"
         aria-hidden="true"
       />
 
-      {/* content */}
       <div className="relative flex min-h-[220px] items-end p-6 md:min-h-[250px] md:p-8">
-        <div className="max-w-[90%]">
+        <div className="max-w-[92%]">
           <div className="text-[11px] uppercase tracking-[0.35em] text-white/60">
-            PROMOCIÓN
+            Promoción
           </div>
 
-          <div className="mt-2 text-xl font-semibold text-white drop-shadow-[0_12px_35px_rgba(0,0,0,0.65)] md:text-2xl">
+          <div className="mt-2 text-xl font-semibold text-white md:text-2xl">
             {promo.label}
           </div>
 
@@ -90,6 +85,8 @@ function FeaturedImageOnly({ featured }: { featured: HomePromoCard }) {
         className="absolute inset-0 bg-linear-to-t from-black/70 via-black/20 to-transparent"
         aria-hidden="true"
       />
+
+      {/* ✅ NO se cambia la altura */}
       <div className="relative min-h-[320px] md:min-h-[360px]" />
     </div>
   );
@@ -107,13 +104,9 @@ export async function PromosSection() {
   const top = home.top ?? [];
   const featured = home.featured ?? null;
 
-  // Regla de negocio:
-  // - Solo 2x1 es clickeable
-  // - 10% es informativa (no link)
   const promo2x1 = top.find((p) => p.id === "2x1-ccna-cyberops") ?? null;
   const promo10 = top.find((p) => p.id === "10off-web") ?? null;
 
-  // Fallbacks seguros: si faltan ids, usamos lo que haya
   const fallbackA = !promo2x1 ? top[0] ?? null : null;
   const fallbackB =
     !promo10 ? top.find((p) => p.id !== promo2x1?.id) ?? top[1] ?? null : null;
@@ -122,18 +115,21 @@ export async function PromosSection() {
   const right = promo10 ?? fallbackB;
 
   return (
-    <section className="mx-auto max-w-7xl px-4 py-14">
-      <div className="mb-10 flex items-center justify-center gap-6">
-        <span className="text-brand-500 text-xl">⚡</span>
-        <h2 className="h2 text-center">ÚLTIMAS PROMOCIONES</h2>
-        <span className="text-brand-500 text-xl">⚡</span>
+    // ✅ Solo reducimos padding inferior
+    <section className="mx-auto max-w-7xl px-4 pt-14 pb-6">
+      <div className="mb-8 flex items-center justify-between gap-4">
+        <h2 className="text-2xl md:text-3xl font-semibold tracking-tight text-white">
+          Promociones activas
+        </h2>
+        <div className="hidden sm:block h-px flex-1 bg-white/10" />
+        <span className="hidden md:inline-flex rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-white/70">
+          Se aplican en checkout
+        </span>
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">
-        {/* Izquierda: SIEMPRE clickeable (pensada para 2x1) */}
         {left ? <PromoTile promo={left} clickable={true} /> : null}
 
-        {/* Derecha: SIEMPRE informativa (pensada para 10%) */}
         {right ? (
           <PromoTile
             promo={right}
@@ -143,9 +139,9 @@ export async function PromosSection() {
         ) : null}
       </div>
 
-      {/* Banner inferior: imagen + link */}
       {featured ? (
-        <div className="mt-6">
+        // ✅ menos separación hacia abajo
+        <div className="mt-4">
           <FeaturedImageOnly featured={featured} />
         </div>
       ) : null}

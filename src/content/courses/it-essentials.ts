@@ -1,22 +1,23 @@
 import type { CourseDTO } from "@/data/courses/schema";
 
-export const course: CourseDTO = {
+const course: CourseDTO = {
   slug: "it-essentials",
-  title: "IT Essentials • Soporte & Fundamentos TI",
-  shortDescription: "Hardware, sistemas, redes básicas y troubleshooting profesional.",
+  title: "IT Essentials • v7 & v8",
+  shortDescription:
+    "Acceso oficial Cisco NetAcad por 3 meses + IT Essentials v7 y v8 (soporte TI y troubleshooting).",
   longDescription:
-    "Base sólida para iniciar en TI: componentes de PC, sistemas operativos, redes básicas, seguridad esencial, soporte y diagnóstico. Enfoque práctico para roles helpdesk/soporte técnico.",
+    "Base sólida para iniciar en TI con la ruta oficial de Cisco NetAcad. Ideal para soporte técnico / helpdesk.",
   pricePEN: 200,
   level: "Inicial",
   durationWeeks: 5,
   includes: [
-    "Fundamentos de hardware y mantenimiento",
-    "Troubleshooting paso a paso",
-    "Conceptos clave de redes y seguridad",
-    "Guías y plantillas para soporte",
-    "Evaluaciones prácticas",
+    "Acceso oficial por 3 meses (renovable sin perder avance).",
+    "Certificados oficiales Cisco NetAcad.",
+    "Insignias digitales.",
+    "Voucher de descuento para examen internacional (según especialidad).",
+    "Clases grabadas (link compartido por WhatsApp).",
   ],
-  tags: ["Soporte", "Hardware", "Troubleshooting", "IT", "Fundamentos"],
+  tags: ["Soporte", "IT", "Fundamentos"],
   cover: "/cursos/it_essentials.png",
 };
 

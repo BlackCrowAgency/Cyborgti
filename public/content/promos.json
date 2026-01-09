@@ -4,19 +4,19 @@
       {
         "id": "2x1-ccna-cyberops",
         "label": "2x1 CCNA + CyberOps • S/299",
-        "image": "/images/promo-2x1.jpg",
+        "image": "/promociones/promo2x1.png",
         "href": "/promociones/2x1-ccna-cyberops"
       },
       {
         "id": "10off-web",
         "label": "10% OFF en cualquier especialidad (comprando en la web)",
-        "image": "/images/promo-10off.jpg",
+        "image": "/promociones/descuento.png",
         "href": null
       }
     ],
     "featured": {
       "id": "cover",
-      "image": "/images/promo-cover.jpg",
+      "image": "/banner/banner.png",
       "href": "/promociones"
     }
   },
@@ -26,7 +26,7 @@
       "type": "bundle",
       "title": "2x1 CCNA + CyberOps",
       "subtitle": "S/299 por inauguración de la web",
-      "image": "/images/promo-2x1.jpg",
+      "image": "/promociones/promo2x1.png",
       "activeFrom": "2026-01-01",
       "activeTo": "2026-02-15",
       "href": "/promociones/2x1-ccna-cyberops",
@@ -40,7 +40,7 @@
       "type": "percent",
       "title": "10% de descuento en cualquiera de nuestras especialidades",
       "subtitle": "Aplicado por comprar desde nuestra web",
-      "image": "/images/promo-10off.jpg",
+      "image": "/promociones/descuento.png",
       "activeFrom": "2026-01-01",
       "activeTo": "2026-12-31",
       "discountPercent": 10,

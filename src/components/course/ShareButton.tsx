@@ -10,20 +10,26 @@ export function ShareButton({
   className?: string;
 }) {
   const onShare = async () => {
-    const url = typeof window !== "undefined" ? window.location.href : "";
+    const url = window.location.href;
+
+    const nav = navigator as Navigator & {
+      share?: (data: { title?: string; url?: string; text?: string }) => Promise<void>;
+    };
 
     try {
-      // @ts-ignore
-      if (navigator.share) {
-        // @ts-ignore
-        await navigator.share({ title, url });
+      if (typeof nav.share === "function") {
+        await nav.share({ title, url });
         return;
       }
-    } catch {}
+    } catch {
+      // noop
+    }
 
     try {
       await navigator.clipboard.writeText(url);
-    } catch {}
+    } catch {
+      // noop
+    }
   };
 
   return (

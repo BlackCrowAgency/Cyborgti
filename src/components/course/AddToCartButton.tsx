@@ -1,6 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+
 import { Button } from "@/components/ui/button";
 import { useCartStore } from "@/features/cart/store";
 import { FiMinus, FiPlus, FiShoppingCart, FiShare2 } from "react-icons/fi";
@@ -20,6 +22,7 @@ export function AddToCartButton({
   showShare?: boolean;
   variant?: "default" | "ecom";
 }) {
+  const router = useRouter();
   const addItem = useCartStore((s) => s.addItem);
   const [qty, setQty] = useState(1);
 
@@ -27,25 +30,33 @@ export function AddToCartButton({
 
   const onAdd = () => {
     addItem(slug, safeQty);
+    if (redirectTo) router.push(redirectTo);
   };
 
-  const onShare = async () => {
-    const url = typeof window !== "undefined" ? window.location.href : "";
-    const shareTitle = title ?? "CyborgTI";
+const onShare = async () => {
+  const url = window.location.href;
+  const shareTitle = title ?? "CyborgTI";
 
-    try {
-      // @ts-ignore
-      if (navigator.share) {
-        // @ts-ignore
-        await navigator.share({ title: shareTitle, url });
-        return;
-      }
-    } catch {}
-
-    try {
-      await navigator.clipboard.writeText(url);
-    } catch {}
+  const nav = navigator as Navigator & {
+    share?: (data: { title?: string; url?: string; text?: string }) => Promise<void>;
   };
+
+  try {
+    if (typeof nav.share === "function") {
+      await nav.share({ title: shareTitle, url });
+      return;
+    }
+  } catch {
+    // noop
+  }
+
+  try {
+    await navigator.clipboard.writeText(url);
+  } catch {
+    // noop
+  }
+};
+
 
   const isEcom = variant === "ecom";
 
@@ -53,9 +64,7 @@ export function AddToCartButton({
     return (
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="text-[11px] uppercase tracking-[0.35em] text-white/55">
-            LICENCIAS
-          </div>
+          <div className="text-[11px] uppercase tracking-[0.35em] text-white/55">LICENCIAS</div>
 
           <div className="flex items-center gap-2">
             <button
@@ -104,14 +113,10 @@ export function AddToCartButton({
     );
   }
 
-  // ✅ Ecommerce variant
   return (
     <div className="w-full">
-      {/* qty row */}
       <div className="flex items-center justify-between gap-3">
-        <div className="text-[11px] uppercase tracking-[0.35em] text-white/55">
-          LICENCIAS
-        </div>
+        <div className="text-[11px] uppercase tracking-[0.35em] text-white/55">LICENCIAS</div>
 
         <div className="flex items-center gap-2">
           <button
@@ -136,7 +141,6 @@ export function AddToCartButton({
         </div>
       </div>
 
-      {/* CTA */}
       <Button
         className="mt-4 w-full h-12 bg-brand-500 shadow-brand hover:glow-brand-soft flex items-center justify-center gap-2 text-base"
         onClick={onAdd}

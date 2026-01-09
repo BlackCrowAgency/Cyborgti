@@ -17,7 +17,7 @@ export function CourseMiniCard({
     <Link
       href={href}
       className={
-        "group relative overflow-hidden rounded-3xl border border-brand-500/25 bg-black/25 shadow-card transition-cyborg hover:border-brand-500/55 hover:shadow-brand " +
+        "group relative w-full min-w-0 overflow-hidden rounded-3xl border border-brand-500/25 bg-black/25 shadow-card transition-cyborg hover:border-brand-500/55 hover:shadow-brand " +
         className
       }
     >
@@ -25,7 +25,7 @@ export function CourseMiniCard({
         {cover ? (
           <div
             className="absolute inset-0 bg-cover bg-center opacity-85 transition-cyborg group-hover:opacity-95 group-hover:scale-[1.02]"
-            style={{ backgroundImage: `url(${cover})` }}
+            style={{ backgroundImage: `url('${cover}')` }}
             aria-hidden="true"
           />
         ) : (
@@ -38,14 +38,15 @@ export function CourseMiniCard({
             }}
           />
         )}
+
         <div className="absolute inset-0 bg-black/60" aria-hidden="true" />
-        <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-black/75 to-transparent" />
+        <div className="absolute inset-x-0 bottom-0 h-24 sm:h-28 bg-gradient-to-t from-black/75 to-transparent" />
       </div>
 
-      <div className="relative flex aspect-[4/5] items-end p-4">
-        <div className="w-full">
-          <div className="text-xs text-white/85 line-clamp-2">{title}</div>
-          <div className="mt-2 text-[11px] text-white/55">{cta}</div>
+      <div className="relative flex aspect-[4/3] sm:aspect-[4/5] items-end p-3 sm:p-4">
+        <div className="w-full min-w-0">
+          <div className="text-sm sm:text-sm text-white/90 line-clamp-2">{title}</div>
+          <div className="mt-2 text-[11px] text-white/60">{cta}</div>
         </div>
       </div>
 
