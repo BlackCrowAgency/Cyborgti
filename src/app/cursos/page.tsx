@@ -90,15 +90,14 @@ export default async function CursosPage({
         </p>
       </header>
 
-      {/* Layout responsivo: 1 col en mobile, 2 col desde lg */}
       <section className="grid gap-6 lg:grid-cols-[260px_1fr] lg:gap-10 lg:items-start">
         <CourseSidebar active={cat} counts={counts} />
 
         <div className="min-w-0">
           <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="inline-flex w-full max-w-full items-center gap-2 rounded-full bg-white/5 px-4 py-2 text-xs text-white ring-1 ring-white/10 backdrop-blur sm:w-auto">
-              <FiFilter className="h-4 w-4 text-white/50" />
-              <span className="text-white/60">{showingText}</span>
+              <FiFilter className="h-4 w-4 text-white/60" />
+              <span className="text-white/70">{showingText}</span>
             </div>
 
             {cat !== "all" ? (
@@ -114,7 +113,7 @@ export default async function CursosPage({
                   sm:w-auto
                 "
               >
-                <FiX className="h-4 w-4 text-white/50" />
+                <FiX className="h-4 w-4 text-white/60" />
                 <span>Ver todos</span>
               </Link>
             ) : null}

@@ -10,20 +10,30 @@ const PAY_LOGOS = [
 
 export function Footer() {
   return (
-    <footer className="mt-24 w-full border-t border-white/10 bg-background">
+    <footer className="mt-0 w-full border-t border-white/10 bg-background">
       <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6">
         {/* ===== ROW 1 ===== */}
         <div className="grid gap-12 md:grid-cols-[1.2fr_1fr_1.2fr] md:items-start">
-          {/* left: SOLO logo */}
+          {/* left: SOLO logo (RESPONSIVO por escala) */}
           <div className="flex items-center justify-center md:justify-start">
-            <Image
-              src="/logo/logofooter.svg"
-              alt="CyborgTI"
-              width={180}
-              height={60}
-              className="h-26 w-auto opacity-95"
-              priority={false}
-            />
+            <div
+              className="
+                relative
+                w-[clamp(220px,32vw,380px)]
+                h-[clamp(56px,8vw,88px)]
+                opacity-95
+              "
+              aria-label="CyborgTI"
+            >
+              <Image
+                src="/logo/logofooter.svg"
+                alt="CyborgTI"
+                fill
+                priority={false}
+                sizes="(max-width: 768px) 70vw, 380px"
+                className="object-contain"
+              />
+            </div>
           </div>
 
           {/* center: nav */}
@@ -111,10 +121,12 @@ export function Footer() {
                 <div
                   key={p.src}
                   className="
-                    relative grid h-11 w-11 place-items-center rounded-full
+                    relative grid place-items-center rounded-full
                     bg-white
                     shadow-[0_10px_30px_rgba(0,0,0,.35)]
                     ring-1 ring-white/20
+                    h-[clamp(40px,10vw,48px)]
+                    w-[clamp(40px,10vw,48px)]
                   "
                   title={p.alt}
                 >
@@ -122,8 +134,8 @@ export function Footer() {
                     src={p.src}
                     alt={p.alt}
                     fill
-                    className="p-2 object-contain"
-                    sizes="44px"
+                    sizes="(max-width: 640px) 40px, 48px"
+                    className="object-contain p-[clamp(8px,2.2vw,10px)]"
                   />
                 </div>
               ))}
