@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { formatPEN } from "@/lib/money";
@@ -15,13 +15,49 @@ type Props = {
   promos: Promo[];
 };
 
+function isEmailValid(email: string) {
+  const v = email.trim();
+  return v.includes("@") && v.includes(".");
+}
+
+function normalizeWhatsAppDigits(input: string) {
+  return input.replace(/\D/g, "");
+}
+
+/**
+ * Entitlements finales (considera bundles):
+ * - course line: qty para ese slug
+ * - bundle line: suma 1 por cada curso incluido * qty del bundle
+ */
+function buildEntitlementsFromLines(lines: ReturnType<typeof computeCheckoutTotals>["lines"]) {
+  const counts: Record<string, number> = {};
+
+  for (const l of lines) {
+    if (l.kind === "course") {
+      counts[l.slug] = (counts[l.slug] ?? 0) + l.qty;
+    } else {
+      const q = l.qty ?? 1;
+      for (const slug of l.includes) {
+        counts[slug] = (counts[slug] ?? 0) + q;
+      }
+    }
+  }
+
+  return counts; // { slug: cantidad }
+}
+
 export function CheckoutClient({ basePriceBySlug, titleBySlug, promos }: Props) {
   const items = useCartStore((s) => s.items);
   const clear = useCartStore((s) => s.clear);
 
   const [fullName, setFullName] = useState("");
-  const [netAcadEmail, setNetAcadEmail] = useState("");
   const [whatsApp, setWhatsApp] = useState("");
+
+  // emails por curso: { [slug]: string[] }
+  const [licenseEmails, setLicenseEmails] = useState<Record<string, string[]>>({});
+
+  // ✅ switch por curso: copiar licencia 1 a todas
+  const [copyAllBySlug, setCopyAllBySlug] = useState<Record<string, boolean>>({});
 
   const totals = useMemo(() => {
     return computeCheckoutTotals({
@@ -32,10 +68,68 @@ export function CheckoutClient({ basePriceBySlug, titleBySlug, promos }: Props) 
     });
   }, [items, basePriceBySlug, titleBySlug, promos]);
 
-  const isEmailValid = netAcadEmail.trim().includes("@") && netAcadEmail.trim().includes(".");
-  const digits = whatsApp.replace(/\D/g, "");
-  const isWhatsAppValid = digits.length >= 8; // simple y flexible
-  const canContinue = fullName.trim().length >= 3 && isEmailValid && isWhatsAppValid;
+  // Construimos la cantidad final de accesos por curso (incluye bundles)
+  const entitlements = useMemo(() => {
+    return buildEntitlementsFromLines(totals.lines);
+  }, [totals.lines]);
+
+  // Asegura que licenseEmails tenga exactamente N campos por slug (N = entitlements[slug])
+  useEffect(() => {
+    setLicenseEmails((prev) => {
+      const next: Record<string, string[]> = { ...prev };
+
+      for (const [slug, count] of Object.entries(entitlements)) {
+        const current = next[slug] ?? [];
+        if (current.length === count) continue;
+
+        if (current.length < count) {
+          next[slug] = [...current, ...Array.from({ length: count - current.length }, () => "")];
+        } else {
+          next[slug] = current.slice(0, count);
+        }
+      }
+
+      for (const slug of Object.keys(next)) {
+        if (!(slug in entitlements)) delete next[slug];
+      }
+
+      return next;
+    });
+
+    // Mantén clean el estado del switch: si un slug desaparece, bórralo
+    setCopyAllBySlug((prev) => {
+      const next = { ...prev };
+      for (const slug of Object.keys(next)) {
+        if (!(slug in entitlements)) delete next[slug];
+      }
+      return next;
+    });
+  }, [entitlements]);
+
+  const digits = normalizeWhatsAppDigits(whatsApp);
+  const isWhatsAppValid = digits.length >= 8;
+  const isNameValid = fullName.trim().length >= 3;
+
+  const allEmailsValid = useMemo(() => {
+    const slugs = Object.keys(entitlements);
+    if (slugs.length === 0) return false;
+
+    for (const slug of slugs) {
+      const needed = entitlements[slug] ?? 0;
+      const arr = licenseEmails[slug] ?? [];
+
+      if (needed <= 0) return false;
+      if (arr.length !== needed) return false;
+
+      for (const email of arr) {
+        if (!isEmailValid(email)) return false;
+      }
+    }
+
+    return true;
+  }, [entitlements, licenseEmails]);
+
+  const canContinue = isNameValid && isWhatsAppValid && allEmailsValid;
 
   if (items.length === 0) {
     return (
@@ -139,8 +233,7 @@ export function CheckoutClient({ basePriceBySlug, titleBySlug, promos }: Props) 
         <h2 className="text-lg font-semibold text-white/95">Datos para activar tu acceso</h2>
 
         <p className="mt-2 text-sm text-white/70">
-          Necesitamos tu nombre, tu correo Cisco NetAcad y tu WhatsApp (para enviarte el link de
-          clases grabadas).
+          Ingresa tus datos y los correos de NetAcad por cada licencia (máximo 5 por curso).
         </p>
 
         <div className="mt-5 space-y-3">
@@ -154,21 +247,6 @@ export function CheckoutClient({ basePriceBySlug, titleBySlug, promos }: Props) 
               placeholder="Ej: Juan Pérez"
               className="mt-2 w-full rounded-xl border border-white/10 bg-black/25 px-3 py-2 text-sm text-white/90 outline-none placeholder:text-white/35 focus:border-brand-500/50"
             />
-          </div>
-
-          <div>
-            <label className="text-xs uppercase tracking-[0.25em] text-white/60">
-              Correo Cisco NetAcad
-            </label>
-            <input
-              value={netAcadEmail}
-              onChange={(e) => setNetAcadEmail(e.target.value)}
-              placeholder="Ej: tucorreo@dominio.com"
-              className="mt-2 w-full rounded-xl border border-white/10 bg-black/25 px-3 py-2 text-sm text-white/90 outline-none placeholder:text-white/35 focus:border-brand-500/50"
-            />
-            <p className="mt-2 text-xs text-white/45">
-              * Debe ser el correo con el que accedes a NetAcad.
-            </p>
           </div>
 
           <div>
@@ -187,6 +265,115 @@ export function CheckoutClient({ basePriceBySlug, titleBySlug, promos }: Props) 
           </div>
         </div>
 
+        {/* ✅ Licencias por curso */}
+        <div className="mt-6 rounded-xl border border-white/10 bg-black/20 p-4">
+          <div className="text-sm font-semibold text-white/90">Licencias (NetAcad)</div>
+          <p className="mt-2 text-sm text-white/70">
+            Debe ser el correo con el que accedes a NetAcad. Puedes repetir correos si aplica.
+          </p>
+
+          <div className="mt-4 space-y-4">
+            {Object.entries(entitlements).map(([slug, count]) => {
+              const title = titleBySlug[slug] ?? slug;
+              const emails = licenseEmails[slug] ?? [];
+              const copyOn = !!copyAllBySlug[slug];
+
+              return (
+                <div key={slug} className="rounded-xl border border-white/10 bg-black/15 p-4">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="text-sm font-semibold text-white/90">{title}</div>
+                    <div className="text-xs text-white/50">
+                      {count} licencia{count === 1 ? "" : "s"}
+                    </div>
+                  </div>
+
+                  {/* ✅ Switch copiar */}
+                  {count > 1 ? (
+                    <div className="mt-3 flex items-center justify-between gap-3">
+                      <span className="text-xs text-white/45">
+                        Tip: activa para llenar más rápido.
+                      </span>
+
+                      <label className="flex items-center gap-2 text-xs text-white/70 cursor-pointer select-none">
+                        <input
+                          type="checkbox"
+                          checked={copyOn}
+                          onChange={(e) => {
+                            const nextChecked = e.target.checked;
+
+                            setCopyAllBySlug((prev) => ({ ...prev, [slug]: nextChecked }));
+
+                            // Si lo activa, copia Licencia 1 a todas
+                            if (nextChecked) {
+                              setLicenseEmails((prev) => {
+                                const current = prev[slug]
+                                  ? [...prev[slug]]
+                                  : Array.from({ length: count }, () => "");
+                                const first = (current[0] ?? "").trim();
+                                const filled = current.map(() => first);
+                                return { ...prev, [slug]: filled };
+                              });
+                            }
+                          }}
+                          className="h-4 w-4"
+                        />
+                        Copiar Licencia 1 a todas
+                      </label>
+                    </div>
+                  ) : null}
+
+                  <div className="mt-3 space-y-2">
+                    {Array.from({ length: count }).map((_, idx) => {
+                      const value = emails[idx] ?? "";
+                      const invalid = value.length > 0 && !isEmailValid(value);
+
+                      return (
+                        <div key={`${slug}-${idx}`}>
+                          <label className="text-xs uppercase tracking-[0.25em] text-white/50">
+                            Licencia {idx + 1} — correo NetAcad
+                          </label>
+                          <input
+                            value={value}
+                            onChange={(e) => {
+                              const v = e.target.value;
+
+                              setLicenseEmails((prev) => {
+                                const current = prev[slug] ? [...prev[slug]] : [];
+                                const nextArr = [...current];
+                                nextArr[idx] = v;
+
+                                // si copy está ON y editan Licencia 1, replica
+                                if ((copyAllBySlug[slug] ?? false) && idx === 0) {
+                                  for (let j = 1; j < count; j++) nextArr[j] = v;
+                                }
+
+                                return { ...prev, [slug]: nextArr };
+                              });
+                            }}
+                            placeholder="Ej: tucorreo@dominio.com"
+                            className={[
+                              "mt-2 w-full rounded-xl border bg-black/25 px-3 py-2 text-sm text-white/90 outline-none placeholder:text-white/35",
+                              invalid
+                                ? "border-red-500/50 focus:border-red-500/60"
+                                : "border-white/10 focus:border-brand-500/50",
+                            ].join(" ")}
+                          />
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {count > 1 ? (
+                    <p className="mt-3 text-[12px] text-white/45">
+                      Si estás comprando para otras personas, coloca el correo de NetAcad de cada una.
+                    </p>
+                  ) : null}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
         <div className="mt-6 rounded-xl border border-white/10 bg-black/20 p-4">
           <div className="text-sm font-semibold text-white/90">Pago</div>
           <p className="mt-2 text-sm text-white/70">
@@ -199,6 +386,16 @@ export function CheckoutClient({ basePriceBySlug, titleBySlug, promos }: Props) 
             className="w-full bg-brand-500 hover:bg-brand-500/90 disabled:opacity-50"
             disabled={!canContinue}
             title={!canContinue ? "Completa tus datos para continuar" : "Continuar"}
+            onClick={() => {
+              const payload = {
+                fullName: fullName.trim(),
+                whatsApp: whatsApp.trim(),
+                licenses: licenseEmails, // { slug: [emails...] }
+                totals,
+              };
+              // eslint-disable-next-line no-console
+              console.log("CHECKOUT DEMO PAYLOAD:", payload);
+            }}
           >
             Continuar (Demo)
           </Button>
@@ -223,7 +420,7 @@ export function CheckoutClient({ basePriceBySlug, titleBySlug, promos }: Props) 
 
         {!canContinue ? (
           <p className="mt-3 text-xs text-white/45">
-            Completa nombre, correo válido y WhatsApp para continuar.
+            Completa nombre, WhatsApp válido y todos los correos NetAcad por licencia para continuar.
           </p>
         ) : null}
       </aside>

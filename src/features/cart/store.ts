@@ -5,9 +5,15 @@ import { persist, createJSONStorage } from "zustand/middleware";
 import type { CartItem, CartState } from "./types";
 
 const STORAGE_KEY = "cyborgti-cart";
+const MAX_QTY_PER_COURSE = 5;
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
+}
+
+function clampQty(qty: number) {
+  const n = Math.floor(Number(qty) || 0);
+  return Math.max(0, Math.min(MAX_QTY_PER_COURSE, n));
 }
 
 function normalizeItems(input: unknown): CartItem[] {
@@ -19,7 +25,7 @@ function normalizeItems(input: unknown): CartItem[] {
       .map((x: unknown) => {
         if (!isRecord(x)) return null;
         const slug = String(x.slug ?? "");
-        const qty = Number(x.qty ?? 0);
+        const qty = clampQty(Number(x.qty ?? 0));
         return { slug, qty };
       })
       .filter((x): x is CartItem => !!x && x.slug.length > 0 && x.qty > 0);
@@ -37,7 +43,6 @@ function normalizeItems(input: unknown): CartItem[] {
   return [];
 }
 
-
 export const useCartStore = create<CartState>()(
   persist(
     (set) => ({
@@ -45,15 +50,20 @@ export const useCartStore = create<CartState>()(
 
       addItem: (slug, qty = 1) => {
         const cleanSlug = String(slug);
-        const addQty = Math.max(1, Math.floor(qty));
+        const addQty = Math.max(1, clampQty(qty)); // mínimo 1, máximo 5
 
         set((state) => {
           const found = state.items.find((i) => i.slug === cleanSlug);
-          if (!found) return { items: [...state.items, { slug: cleanSlug, qty: addQty }] };
 
+          if (!found) {
+            return { items: [...state.items, { slug: cleanSlug, qty: addQty }] };
+          }
+
+          const nextQty = clampQty(found.qty + addQty);
+          // Si ya está en 5, se queda en 5
           return {
             items: state.items.map((i) =>
-              i.slug === cleanSlug ? { ...i, qty: i.qty + addQty } : i
+              i.slug === cleanSlug ? { ...i, qty: Math.max(1, nextQty) } : i
             ),
           };
         });
@@ -66,7 +76,7 @@ export const useCartStore = create<CartState>()(
 
       setQty: (slug, qty) => {
         const cleanSlug = String(slug);
-        const nextQty = Math.max(0, Math.floor(qty));
+        const nextQty = clampQty(qty);
 
         set((state) => {
           if (nextQty === 0) return { items: state.items.filter((i) => i.slug !== cleanSlug) };
@@ -85,16 +95,16 @@ export const useCartStore = create<CartState>()(
     }),
     {
       name: STORAGE_KEY,
-      version: 2,
+      version: 3,
       storage: createJSONStorage(() => localStorage),
-    migrate: (persistedState) => {
-      if (isRecord(persistedState)) {
-        const items = normalizeItems(
-          (persistedState.items ?? persistedState.cart ?? persistedState) as unknown
-        );
-        return { ...persistedState, items };
-      }
-      return { items: [] };
+      migrate: (persistedState) => {
+        if (isRecord(persistedState)) {
+          const items = normalizeItems(
+            (persistedState.items ?? persistedState.cart ?? persistedState) as unknown
+          );
+          return { ...persistedState, items };
+        }
+        return { items: [] };
       },
     }
   )

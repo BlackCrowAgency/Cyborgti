@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { FiShoppingCart, FiMenu, FiX } from "react-icons/fi";
 import { AnimatePresence, motion } from "framer-motion";
@@ -29,12 +29,30 @@ function cx(...c: Array<string | false | null | undefined>) {
 
 export function Navbar() {
   const items = useCartStore((s) => s.items);
-  const count = cartCount(items);
+  const count = useMemo(() => cartCount(items), [items]);
 
   const pathname = usePathname();
 
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+
+  // micro-interacción: pulse cuando el carrito aumenta
+  const prevCountRef = useRef<number>(count);
+  const [cartPulse, setCartPulse] = useState(false);
+
+  useEffect(() => {
+    const prev = prevCountRef.current;
+    if (count > prev) {
+      setCartPulse(true);
+      const t = window.setTimeout(() => setCartPulse(false), 260);
+      return () => window.clearTimeout(t);
+    }
+  }, [count]);
+
+  // mantener prevCount actualizado siempre
+  useEffect(() => {
+    prevCountRef.current = count;
+  }, [count]);
 
   const openBtnRef = useRef<HTMLButtonElement | null>(null);
   const closeBtnRef = useRef<HTMLButtonElement | null>(null);
@@ -47,6 +65,11 @@ export function Navbar() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  // Cerrar menú al cambiar de ruta
+  useEffect(() => {
+    setOpen(false);
+  }, [pathname]);
+
   // Lock scroll cuando menú está abierto
   useEffect(() => {
     if (!open) return;
@@ -57,7 +80,7 @@ export function Navbar() {
     };
   }, [open]);
 
-  // Focus management (pro)
+  // Focus management
   useEffect(() => {
     if (!open) return;
     requestAnimationFrame(() => closeBtnRef.current?.focus());
@@ -79,9 +102,10 @@ export function Navbar() {
 
   return (
     <>
+      {/* ===== NAVBAR ANCLADA ===== */}
       <header
         className={cx(
-          "sticky top-0 z-[70] w-full border-b border-white/10 backdrop-blur",
+          "fixed top-0 left-0 right-0 z-[70] w-full border-b border-white/10 backdrop-blur",
           scrolled
             ? "bg-neutral-950/80 shadow-[0_12px_30px_rgba(0,0,0,0.35)]"
             : "bg-neutral-950/70"
@@ -101,7 +125,6 @@ export function Navbar() {
                 priority
                 sizes="(max-width: 768px) 180px, 210px"
                 className={cx(
-                  // CLAVE: evita que el logo tape clicks en mobile
                   "pointer-events-none object-contain object-left select-none origin-left transition-transform duration-300 ease-out",
                   scrolled ? "scale-[2.75] md:scale-[4.15]" : "scale-[3.0] md:scale-[4.55]"
                 )}
@@ -163,18 +186,38 @@ export function Navbar() {
             </nav>
 
             {/* Cart */}
-            <Link
-              href="/carrito"
-              className="relative inline-flex h-14 w-14 items-center justify-center rounded-xl bg-brand-500/25 ring-1 ring-brand-500/40 transition-cyborg hover:bg-brand-500/35 hover:glow-brand-soft"
-              aria-label="Carrito"
+            <motion.div
+              animate={cartPulse ? { scale: 1.06 } : { scale: 1 }}
+              transition={{ type: "spring", stiffness: 520, damping: 22 }}
+              className="relative"
             >
-              <FiShoppingCart className="text-white text-2xl" />
-              {count > 0 && (
-                <span className="absolute -right-2 -top-2 inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-brand-500 px-2 text-xs font-bold text-white shadow-brand">
-                  {count}
-                </span>
-              )}
-            </Link>
+              <Link
+                href="/carrito"
+                className={cx(
+                  "relative inline-flex h-14 w-14 items-center justify-center rounded-xl",
+                  "bg-brand-500/25 ring-1 ring-brand-500/40 transition-cyborg",
+                  "hover:bg-brand-500/35 hover:glow-brand-soft"
+                )}
+                aria-label="Carrito"
+              >
+                <FiShoppingCart className="text-white text-2xl" />
+
+                <AnimatePresence>
+                  {count > 0 && (
+                    <motion.span
+                      key={count}
+                      initial={{ scale: 0.6, opacity: 0, y: -2 }}
+                      animate={{ scale: 1, opacity: 1, y: 0 }}
+                      exit={{ scale: 0.7, opacity: 0 }}
+                      transition={{ type: "spring", stiffness: 700, damping: 22 }}
+                      className="absolute -right-2 -top-2 inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-brand-500 px-2 text-xs font-bold text-white shadow-brand"
+                    >
+                      {count}
+                    </motion.span>
+                  )}
+                </AnimatePresence>
+              </Link>
+            </motion.div>
 
             {/* Hamburger (mobile) */}
             <button
@@ -192,7 +235,10 @@ export function Navbar() {
         </div>
       </header>
 
-      {/* ===== FULLSCREEN MENU (ULTRA PREMIUM) ===== */}
+      {/* ===== SPACER: evita que el contenido se meta debajo del header fijo ===== */}
+      <div aria-hidden="true" style={{ height: headerH }} />
+
+      {/* ===== FULLSCREEN MENU ===== */}
       <AnimatePresence>
         {open && (
           <motion.div
@@ -202,7 +248,6 @@ export function Navbar() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
           >
-            {/* Fondo sólido premium (no se mezcla con el hero) */}
             <motion.div
               className="absolute inset-0 bg-neutral-950"
               initial={{ opacity: 0 }}
@@ -210,13 +255,11 @@ export function Navbar() {
               exit={{ opacity: 0 }}
             />
 
-            {/* Glow + sheen (capa estética) */}
             <div className="pointer-events-none absolute inset-0">
               <div className="absolute inset-0 bg-[radial-gradient(900px_500px_at_20%_0%,rgba(29,0,209,0.22),transparent_60%)]" />
               <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.06),transparent_30%)]" />
             </div>
 
-            {/* Contenido */}
             <motion.div
               className="relative flex h-full flex-col"
               initial={{ y: 14, opacity: 0 }}
@@ -227,7 +270,6 @@ export function Navbar() {
               aria-modal="true"
               id="mobile-menu-fullscreen"
             >
-              {/* Header fijo del menú */}
               <div className="flex items-center justify-between border-b border-white/10 px-5 py-5">
                 <div className="flex flex-col">
                   <span className="text-xs tracking-[0.35em] text-white/70">MENÚ</span>
@@ -241,28 +283,24 @@ export function Navbar() {
                     setOpen(false);
                     openBtnRef.current?.focus();
                   }}
-                  className="
-                    inline-flex h-12 w-12 items-center justify-center rounded-2xl
-                    bg-white/5 ring-1 ring-white/10 text-white/90
-                    transition-cyborg hover:bg-white/10
-                    focus:outline-none focus:ring-2 focus:ring-brand-500/60
-                  "
+                  className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-white/5 ring-1 ring-white/10 text-white/90 transition-cyborg hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-brand-500/60"
                   aria-label="Cerrar menú"
                 >
                   <FiX className="text-2xl" />
                 </button>
               </div>
 
-              {/* Body scrolleable */}
               <div className="flex-1 overflow-y-auto px-5 py-6 scrollbar-thin">
-                {/* Links full width */}
                 <motion.nav
                   className="flex flex-col gap-3"
                   initial="hidden"
                   animate="show"
                   variants={{
                     hidden: { opacity: 0 },
-                    show: { opacity: 1, transition: { staggerChildren: 0.06, delayChildren: 0.03 } },
+                    show: {
+                      opacity: 1,
+                      transition: { staggerChildren: 0.06, delayChildren: 0.03 },
+                    },
                   }}
                   aria-label="Navegación móvil"
                 >
@@ -280,9 +318,7 @@ export function Navbar() {
                           href={l.href}
                           onClick={() => setOpen(false)}
                           className={cx(
-                            "group relative flex items-center justify-between",
-                            "rounded-2xl px-5 py-4",
-                            "ring-1 transition-cyborg",
+                            "group relative flex items-center justify-between rounded-2xl px-5 py-4 ring-1 transition-cyborg",
                             active
                               ? "bg-white/10 ring-white/15 text-white"
                               : "bg-white/5 ring-white/10 text-white/90 hover:bg-white/10"
@@ -294,10 +330,9 @@ export function Navbar() {
                             className="grid h-10 w-10 place-items-center rounded-xl bg-black/30 ring-1 ring-white/10 transition-cyborg group-hover:bg-black/40"
                             aria-hidden="true"
                           >
-                            <span className="text-white/60 text-xlor">›</span>
+                            <span className="text-white/60 text-xl">›</span>
                           </span>
 
-                          {/* Glow sutil */}
                           <span className="pointer-events-none absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-cyborg glow-brand-soft" />
                         </Link>
                       </motion.div>
@@ -305,7 +340,6 @@ export function Navbar() {
                   })}
                 </motion.nav>
 
-                {/* Pagos */}
                 <div className="mt-7 rounded-2xl bg-white/5 ring-1 ring-white/10 p-5">
                   <div className="flex items-center justify-between">
                     <span className="text-xs tracking-[0.25em] text-white/60">ACEPTAMOS</span>
@@ -319,30 +353,28 @@ export function Navbar() {
                         className="relative inline-flex h-12 w-12 items-center justify-center rounded-full bg-white ring-1 ring-black/10"
                         title={p.alt}
                       >
-                        <Image src={p.src} alt={p.alt} fill className="p-2 object-contain" sizes="48px" />
+                        <Image
+                          src={p.src}
+                          alt={p.alt}
+                          fill
+                          className="p-2 object-contain"
+                          sizes="48px"
+                        />
                       </span>
                     ))}
                   </div>
                 </div>
 
-                {/* CTA */}
                 <div className="mt-7">
                   <Link
                     href="/cursos"
                     onClick={() => setOpen(false)}
-                    className="
-                      flex items-center justify-center rounded-2xl
-                      bg-brand-500/30 ring-1 ring-brand-500/40
-                      px-5 py-4 text-white font-semibold
-                      transition-cyborg hover:bg-brand-500/38 hover:glow-brand-soft
-                      focus:outline-none focus:ring-2 focus:ring-brand-500/60
-                    "
+                    className="flex items-center justify-center rounded-2xl bg-brand-500/30 ring-1 ring-brand-500/40 px-5 py-4 text-white font-semibold transition-cyborg hover:bg-brand-500/38 hover:glow-brand-soft focus:outline-none focus:ring-2 focus:ring-brand-500/60"
                   >
                     Ver cursos
                   </Link>
                 </div>
 
-                {/* Espacio final para evitar “pegado” */}
                 <div className="h-10" />
               </div>
             </motion.div>

@@ -4,6 +4,7 @@ import type { Metadata, Viewport } from "next";
 import { TopTicker } from "@/components/home/TopTicker";
 import { Navbar } from "@/components/common/Navbar";
 import { Footer } from "@/components/common/Footer";
+import { CartNoticeHost } from "@/components/common/CartNoticeHost";
 
 const orbitron = Orbitron({
   subsets: ["latin"],
@@ -34,6 +35,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Navbar />
         {children}
         <Footer />
+        <CartNoticeHost />
+
       </body>
     </html>
   );
